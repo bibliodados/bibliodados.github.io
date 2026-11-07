@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificados e Diplomas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+            background: #f3efe8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(20,33,61,.15);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f766e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .lattes-link {
+            display: inline-block;
+            margin-bottom: 14px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.7);
+        }
+        .lattes-link:hover,
+        .lattes-link:focus {
+            color: #f1efff;
+            border-bottom-color: white;
+        }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        header p { font-size: 1.1em; opacity: 0.9; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-number { font-size: 2em; font-weight: bold; color: #1e3a5f; }
+        .stat-label { color: #6c757d; margin-top: 5px; }
+        .controls {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .sort-select, .year-filter-select {
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.75em;
+            background: white;
+            height: 28px;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 180px;
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.75em;
+            height: 28px;
+        }
+        .search-box:focus { outline: none; border-color: #1e3a5f; }
+        .filter-btn {
+            padding: 4px 10px;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75em;
+            height: 28px;
+            line-height: 18px;
+        }
+        .filter-btn.active { background: #0f766e; }
+        .institution-filters {
+            padding: 8px 20px;
+            background: #fff;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .institution-filter-label {
+            font-size: 0.7em;
+            color: #6c757d;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .institution-pill {
+            padding: 2px 8px;
+            background: #e9ecef;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.7em;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .institution-pill:hover {
+            background: #1e3a5f;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .institution-pill.active {
+            background: #0f766e;
+            color: white;
+            border-color: #0f766e;
+        }
+        .content { padding: 40px; }
+        .category-section { margin-bottom: 50px; }
+        .category-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f766e 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .category-title { font-size: 1.8em; font-weight: bold; }
+        .category-count {
+            background: rgba(255,255,255,0.25);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+        .year-section { margin-bottom: 35px; margin-left: 10px; }
+        .year-header {
+            background: #f8f9fa;
+            padding: 12px 25px;
+            border-left: 5px solid #1e3a5f;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #495057;
+            border-radius: 0 8px 8px 0;
+        }
+        .institution-section {
+            margin-bottom: 20px;
+        }
+        .institution-header {
+            background: #e8eef5;
+            color: #495057;
+            padding: 10px 18px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 1em;
+            font-weight: 700;
+        }
+        .certificates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .certificate-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .certificate-card:hover {
+            border-color: #1e3a5f;
+            box-shadow: 0 8px 25px rgba(20, 33, 61, 0.25);
+            transform: translateY(-5px);
+        }
+        .logo-container {
+            width: 100%;
+            height: 150px;
+            background: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            padding: 10px;
+        }
+        .institution-logo {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        .logo-placeholder {
+            font-size: 3em;
+            color: #adb5bd;
+        }
+        .logos-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        .logo-small {
+            max-width: 45%;
+            max-height: 45%;
+            object-fit: contain;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1));
+        }
+        .certificate-info {
+            padding: 18px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .certificate-title {
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            flex: 1;
+        }
+        .click-hint {
+            text-align: center;
+            font-size: 0.75em;
+            color: white;
+            font-weight: 600;
+            padding: 8px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f766e 100%);
+            border-radius: 6px;
+            margin-top: auto;
+        }
+        footer {
+            text-align: center;
+            padding: 25px;
+            background: #f8f9fa;
+            color: #6c757d;
+            border-top: 2px solid #e9ecef;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #1e3a5f;
+            font-size: 0.9em;
+        }
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8em; }
+            .content { padding: 20px; }
+            .certificates-grid { grid-template-columns: 1fr; }
+            .controls { padding: 15px 20px; }
+            .stats { padding: 20px; }
+        }
+
+        :root { --ink:#1f2937; --muted:#6b7280; --brand:#1e3a5f; --brand2:#0f766e; --line:#e5e7eb; }
+        .cv-hero { display:flex; gap:32px; align-items:center; padding:48px 40px; background:linear-gradient(135deg,#1e3a5f 0%,#0f766e 100%); color:#fff; }
+        .cv-photo { flex:0 0 160px; width:160px; height:160px; border-radius:50%; border:4px solid rgba(255,255,255,.85); background:rgba(255,255,255,.2) center/cover; display:flex; align-items:center; justify-content:center; font-size:3em; font-weight:700; overflow:hidden; }
+        .cv-photo img { width:100%; height:100%; object-fit:cover; }
+        .cv-hero h1 { font-size:2.4em; margin:0 0 6px; text-shadow:none; }
+        .cv-role { font-size:1.15em; opacity:.95; margin-bottom:14px; }
+        .cv-links { display:flex; gap:10px; flex-wrap:wrap; }
+        .cv-links a { color:#fff; text-decoration:none; border:1px solid rgba(255,255,255,.7); border-radius:20px; padding:6px 14px; font-size:.9em; }
+        .cv-links a:hover { background:rgba(255,255,255,.2); }
+        .cv-body { display:grid; grid-template-columns:1fr 1fr; gap:32px; padding:36px 40px; border-bottom:2px solid var(--line); }
+        .cv-body section.full { grid-column:1/-1; }
+        .cv-body h2 { font-size:1.1em; text-transform:uppercase; letter-spacing:.08em; color:var(--brand); border-bottom:2px solid var(--line); padding-bottom:6px; margin-bottom:14px; }
+        .cv-body p { color:var(--ink); line-height:1.6; }
+        .cv-item { margin-bottom:14px; padding-left:14px; border-left:3px solid var(--brand); }
+        .cv-item b { display:block; color:var(--ink); }
+        .cv-item span { color:var(--muted); font-size:.92em; }
+        .cv-item a { color:var(--brand); font-size:.85em; text-decoration:none; }
+        .cv-tags { display:flex; flex-wrap:wrap; gap:8px; }
+        .cv-tags span { background:#e8eef5; color:#1e3a5f; border-radius:14px; padding:4px 12px; font-size:.85em; }
+        .cv-section-title { padding:28px 40px 0; font-size:1.5em; color:var(--ink); }
+        @media (max-width:768px) { .cv-hero { flex-direction:column; text-align:center; padding:32px 20px; } .cv-body { grid-template-columns:1fr; padding:24px 20px; } .cv-section-title { padding:24px 20px 0; } }
+        @media print { body { background:#fff; padding:0; } .controls,.institution-filters,.cv-section-title,#content,footer { display:none !important; } .container { box-shadow:none; } }
+
+        h1, .cv-body h2, .cv-section-title, .category-title, .year-header { font-family: Georgia, 'Times New Roman', serif; }
+        .cv-hero { position:relative; background:linear-gradient(120deg,#14213d 0%,#1e3a5f 55%,#0f766e 100%); }
+        .cv-hero::after { content:''; position:absolute; inset:auto 0 0 0; height:4px; background:linear-gradient(90deg,#d4a017,#f2c94c,#d4a017); }
+        .cv-photo { border-color:#d4a017; box-shadow:0 6px 24px rgba(0,0,0,.35); }
+        .cv-role { color:#f2e3b3; }
+        .cv-links a { background:rgba(255,255,255,.08); }
+        .cv-links a:hover { background:#d4a017; border-color:#d4a017; color:#14213d; }
+        .cv-body { background:#fbfaf7; }
+        .cv-body h2 { color:#14213d; border-bottom:2px solid #d4a017; display:inline-block; padding-right:24px; }
+        .cv-item { border-left-color:#d4a017; }
+        .cv-item.now { border-left-color:#0f766e; }
+        .cv-badge { display:inline-block; background:#0f766e; color:#fff; border-radius:10px; padding:1px 9px; font-size:.75em; margin-left:6px; vertical-align:middle; }
+        .cv-tags span { background:#fff; border:1px solid #d9d2c3; color:#14213d; }
+        .cv-tags span:nth-child(3n) { border-color:#d4a017; }
+        .stat-number { color:#0f766e; font-family:Georgia,serif; }
+        .stats, .controls { background:#fbfaf7; }
+        .category-header { box-shadow:0 4px 15px rgba(20,33,61,.25); }
+        .certificate-card { transition:transform .15s, box-shadow .15s; }
+        .certificate-card:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(20,33,61,.18); }
+        .click-hint { color:#fff !important; background:#14213d !important; font-size:.85em !important; letter-spacing:.02em; }
+        .certificate-card:hover .click-hint { background:#0f766e !important; }
+        .institution-header { color:#14213d; border-left:4px solid #d4a017; }
+        .stat-label, footer, .cv-item span { color:#4b5563; }
+        a:focus-visible, button:focus-visible { outline:3px solid #d4a017; outline-offset:2px; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="cv-hero">
+            <div class="cv-photo" id="cvPhoto">MD</div>
+            <div>
+                <h1>Marcelo Neves Diniz</h1>
+                <div class="cv-role">Bibliotecário · Graduando em IA e Machine Learning · Mestre em Propriedade Intelectual e Transferência de Tecnologia (PROFNIT/UFT)</div>
+                <div class="cv-links">
+                    <a href="http://lattes.cnpq.br/3825140981050471" target="_blank" rel="noopener noreferrer">📄 Currículo Lattes</a>
+                    <a href="https://drive.google.com/drive/folders/128UzlaSHRYi0WEZcfGs9uc-K7g48rJ3Q" target="_blank" rel="noopener noreferrer">☁️ Pasta de certificados</a>
+                    <a href="#certificados">📚 Formação complementar</a>
+                </div>
+            </div>
+        </header>
+        <div class="cv-body">
+            <section class="full">
+                <h2>Perfil</h2>
+                <p>Bibliotecário com formação em Biblioteconomia (UFMA), especialização em Docência na Educação Superior e mestrado profissional em Propriedade Intelectual e Transferência de Tecnologia para a Inovação (PROFNIT/UFT). Atuação em normalização, gestão da informação e do conhecimento, propriedade intelectual, educação a distância, inteligência artificial aplicada a bibliotecas e à pesquisa, com palestras, oficinas, participação em bancas e orientações.</p>
+            </section>
+            <section>
+                <h2>Formação acadêmica</h2>
+                <div class="cv-item now"><b>Graduação em Inteligência Artificial e Machine Learning (IAML)<span class="cv-badge">em andamento</span></b><span>Uniasselvi</span></div>
+                <div class="cv-item"><b>Mestrado Profissional – PROFNIT</b><span>Universidade Federal do Tocantins (UFT)</span><br><a href="https://drive.google.com/file/d/1hFM9waFLF58ZxTkjlsf5jfRL00xaAYns/view" target="_blank" rel="noopener">Ver diploma</a></div>
+                <div class="cv-item"><b>Especialização em Docência na Educação Superior</b><span>2005 · 360h</span><br><a href="https://drive.google.com/file/d/1gWsjbKMCiueLrJrv0bws2TV2gcnuXasE/view" target="_blank" rel="noopener">Ver certificado</a></div>
+                <div class="cv-item"><b>Graduação em Biblioteconomia</b><span>Universidade Federal do Maranhão (UFMA) · 1999–2003</span><br><a href="https://drive.google.com/file/d/12jEJ-ZqTIxtdqj-rBBGG4NalYZ0OYkHY/view" target="_blank" rel="noopener">Ver diploma e histórico</a></div>
+            </section>
+            <section>
+                <h2>Áreas de atuação</h2>
+                <div class="cv-tags">
+                    <span>Biblioteconomia</span><span>Normalização ABNT</span><span>Propriedade intelectual</span><span>Inovação e transferência de tecnologia</span><span>Gestão da informação</span><span>Educação a distância</span><span>Docência superior</span><span>Inteligência artificial</span><span>Ciência aberta</span><span>Serviço público</span>
+                </div>
+                <h2 style="margin-top:24px">Em números</h2>
+                <p id="cvNumbers"></p>
+            </section>
+        </div>
+        <h2 class="cv-section-title" id="certificados">Formação complementar, eventos e atuação</h2>
+<div class="stats" id="stats">
+                <div class="stat-card"><div class="stat-number">123</div><div class="stat-label">Total</div></div>
+                <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Categorias</div></div>
+                <div class="stat-card"><div class="stat-number">1997-2026</div><div class="stat-label">Período</div></div>
+                <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Diplomas</div></div>
+                <div class="stat-card"><div class="stat-number">93</div><div class="stat-label">Cursos</div></div>
+                <div class="stat-card"><div class="stat-number">19</div><div class="stat-label">Eventos</div></div>
+                <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Palestras</div></div>
+                <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Orientação</div></div>
+    </div>
+
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Buscar certificados...">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="diploma">Diplomas</button>
+            <button class="filter-btn" data-filter="curso">Cursos</button>
+            <button class="filter-btn" data-filter="evento">Eventos</button>
+            <button class="filter-btn" data-filter="palestra">Palestras</button>
+            <button class="filter-btn" data-filter="orientacao">Orientação</button>
+            <select id="sortOrder" class="sort-select" aria-label="Ordenar por ano">
+                <option value="desc">Ano ↓</option>
+                <option value="asc">Ano ↑</option>
+            </select>
+            <select id="yearFilter" class="year-filter-select" aria-label="Filtrar por ano">
+                <option value="all">Ano</option>
+            </select>
+        </div>
+        <div class="institution-filters" id="institutionFilters">
+            <span class="institution-filter-label">Instituições:</span>
+        </div>
+
+        <div class="content" id="content"></div>
+
+        <footer>
+            <p>Total de documentos: <span id="totalCount">122</span></p>
+            <p>Gerado em: <span id="generatedDate">certificadosediplomas.html</span></p>
+        </footer>
+    </div>
+
+    <script>
+        const categoryLabels = {'diploma': '🎓 Diplomas', 'curso': '📚 Cursos', 'evento': '🎭 Eventos e Congressos', 'palestra': '🎤 Palestras', 'orientacao': '👨\u200d🏫 Orientação e Bancas'};
+
+        const certificates = [
+            {"title":"2005 - Especialização Docência Educação Superior - 360h","year":2005,"category":"diploma","hours":"360h","institution":"","file":"CERTIFICADOS/1 DIPLOMAS/Especialização - Docência Educação Superior.pdf","drive":"https://drive.google.com/file/d/1gWsjbKMCiueLrJrv0bws2TV2gcnuXasE/view"},
+            {"title":"2004 - Diploma e histórico de graduação Biblioteconomia - UFMA (1999-2003)","year":2004,"category":"diploma","hours":"","institution":"UFMA","file":"CERTIFICADOS/1 DIPLOMAS/UFMA - Diploma e histórico de graduação - Biblioteconomia.pdf","drive":"https://drive.google.com/file/d/12jEJ-ZqTIxtdqj-rBBGG4NalYZ0OYkHY/view"},
+            {"title":"diploma mestrado profnit - UFT","year":2026,"category":"diploma","hours":"","institution":"UFT","file":"CERTIFICADOS/1 DIPLOMAS/UFT - diploma mestrado profnit.pdf","drive":"https://drive.google.com/file/d/1hFM9waFLF58ZxTkjlsf5jfRL00xaAYns/view"},
+            {"title":"1997 - Leitura Dinâmica - 80h","year":1997,"category":"curso","hours":"80h","institution":"SENAC","file":"CERTIFICADOS/1997 a 2017 (10)/1997 - Leitura Dinâmica - 80h.pdf","drive":"https://drive.google.com/file/d/1IDsKyabmV9R0cbc5wpb8MRmtCD0Ua8js/view"},
+            {"title":"2003 - Excelência no Atendimento ao Cliente - 30h","year":2003,"category":"curso","hours":"30h","institution":"SENAC","file":"CERTIFICADOS/1997 a 2017 (10)/2003 - Excelência no ATENDIMENTO 30h.pdf","drive":"https://drive.google.com/file/d/14ai6MYcclLtVnLMBb0oBdcq0atwL1dQ5/view"},
+            {"title":"2005 - Treinamento de uso da ProQuest","year":2005,"category":"curso","hours":"","institution":"ProQuest","file":"CERTIFICADOS/1997 a 2017 (10)/2005 - Proquest.pdf","drive":"https://drive.google.com/file/d/1D3k-7-8VYGyqYx34PBevGFAAfb6bCPVu/view"},
+            {"title":"2008 - Webdesigner - 120h","year":2008,"category":"curso","hours":"120h","institution":"DataContRol","file":"CERTIFICADOS/1997 a 2017 (10)/2008 - Webdesigner -120h.pdf","drive":"https://drive.google.com/file/d/1uA8-HIFxm7o09nD73PRb8_EL_l_rKmCK/view"},
+            {"title":"2009 - Capacitação para Implantação do Sistema SPW - 16h","year":2009,"category":"curso","hours":"16h","institution":"CRB","file":"CERTIFICADOS/1997 a 2017 (10)/2009 - SPW CRB - 16h.pdf","drive":"https://drive.google.com/file/d/1CjOn0k-jNYXeKDaidcBB6DKHH-56qLc7/view"},
+            {"title":"2016 - Introdução ao Serviço Público - 20h","year":2016,"category":"curso","hours":"20h","institution":"Unicet","file":"CERTIFICADOS/1997 a 2017 (10)/2016 - Curso Introdução ao Serviço Público - Unicet certificado-20h.pdf","drive":"https://drive.google.com/file/d/1YAcVhj9YZx8lFMXBMDohBJj2KWR_BrUP/view"},
+            {"title":"2017 - MOOC - Metodologia da Pesquisa Científica - 40h","year":2017,"category":"curso","hours":"40h","institution":"Artesanato Educacional","file":"CERTIFICADOS/1997 a 2017 (10)/2017 - Metodologia da Pesquisa Científica-40h.pdf","drive":"https://drive.google.com/file/d/1D9JIRQIXNwu1moyPpeM8O7PFAkVaNo_o/view"},
+            {"title":"2017 - Produção Editorial - 42h","year":2017,"category":"curso","hours":"42h","institution":"Universidade do Livro","file":"CERTIFICADOS/1997 a 2017 (10)/2017 - Produção Editorial - 42h.pdf","drive":"https://drive.google.com/file/d/1l-mK3WhjcIxfxkya0ocHUKLAOjet-8Fm/view"},
+            {"title":"2017 - Redação Oficial - 20h","year":2017,"category":"curso","hours":"20h","institution":"Unicet","file":"CERTIFICADOS/1997 a 2017 (10)/2017 - Redação Oficial - Unicet - 20h.pdf","drive":"https://drive.google.com/file/d/12CR504OqX33JkcRHPPW2enKI3aP8Ar0y/view"},
+            {"title":"2017 - Acceso y Uso de la Información Científica en Salud - 45h","year":2017,"category":"curso","hours":"45h","institution":"OPS","file":"CERTIFICADOS/1997 a 2017 (10)/2017- Acceso y Uso de la Información Científica en Salud - 45h.pdf","drive":"https://drive.google.com/file/d/1bPGpM48qOJupgqFEYFnsLXwhraCp36mp/view"},
+            {"title":"2018 - Gestão da Informação e Documentação - Conceitos Básicos em Gestão Documental - 20h","year":2018,"category":"curso","hours":"20h","institution":"Enap","file":"CERTIFICADOS/2018 (6)/2018 - Gestão da Informação e Documentação - Conceitos Básicos em Gestão Documental - EVG.pdf","drive":"https://drive.google.com/file/d/18uVm7gcsMfm_xrfl-ZPsTIpA4g9zR-qk/view"},
+            {"title":"2018 - Noções Gerais de Direitos Autorais - 10h","year":2018,"category":"curso","hours":"10h","institution":"Enap","file":"CERTIFICADOS/2018 (6)/2018 - Noções Gerais de Direitos Autorais - EVG.pdf","drive":"https://drive.google.com/file/d/1czcrV0qwYsVuLmYUfmeESkduICU7sv2c/view"},
+            {"title":"2018 - Oficina sobre o Plano de Gestão da Informação e Conhecimento - 16h","year":2018,"category":"evento","hours":"16h","institution":"EVG","file":"CERTIFICADOS/2018 (6)/2018 - Oficina sobre o Plano de Gestão da Informação e Conhecimento-16h.pdf","drive":"https://drive.google.com/file/d/1T1xkrGJIDZcYmWKBK_wdasYZt7JYgGOy/view"},
+            {"title":"2018 - Participação em Banca de TCC Estratégia de intervenção para o fortalecimento dos processos de comunicação entre a gestão","year":2018,"category":"orientacao","hours":"","institution":"","file":"CERTIFICADOS/2018 (6)/2018 - Participação em Banca de TCC - Estratégia de intervenção para o fortalecimento dos processos de comunicação entre a gestão.pdf","drive":"https://drive.google.com/file/d/1RgVXN3wBTa6Vx2tg5R9Cqp8wu2XaBGQC/view"},
+            {"title":"2018 - Participação em Banca de TCC Orientador Ações de responsabilidade socioambiental para o Lacen TO","year":2018,"category":"orientacao","hours":"","institution":"","file":"CERTIFICADOS/2018 (6)/2018 - Participação em Banca de TCC Orientador - Ações de responsabilidade socioambiental para o Lacen-TO.pdf","drive":"https://drive.google.com/file/d/1rgoXnzzOaICRk9M3sH_GUQkC0AeyuGEC/view"},
+            {"title":"2018 - REPOSITÓRIOS INSTITUCIONAIS: GESTÃO, PLANEJAMENTO E IMPLEMENTAÇÃO - 120h","year":2018,"category":"curso","hours":"120h","institution":"ClassCursos","file":"CERTIFICADOS/2018 (6)/2018 - Repositórios institucionais - classcursos - 120h.pdf","drive":"https://drive.google.com/file/d/1j8sGeMR87_spHKJ2qhZXQARRNMgblZPp/view"},
+            {"title":"2019 - GDI2019 - 40h","year":2019,"category":"curso","hours":"40h","institution":"GDI Online","file":"CERTIFICADOS/2019 (6)/2019 - CERTIFICADO GDI2019- 40h.pdf","drive":"https://drive.google.com/file/d/1V-6LQ8VnU1Q5qFJFfdnw8c3xm4DTHzwQ/view"},
+            {"title":"Oficina de reflexão de prática docente com uso de metodologias ativas - 48h","year":2019,"category":"evento","hours":"48h","institution":"","file":"CERTIFICADOS/2019 (6)/2019 - Oficina de reflexão de prática docente com uso de metodologias ativas - 48h.pdf","drive":"https://drive.google.com/file/d/1ytvECnFFS7RixnsSqXV6NxMzI1KPWAK4/view"},
+            {"title":"2019 - Citações em Trabalhos Acadêmicos - 20h - IFSC","year":2019,"category":"curso","hours":"20h","institution":"IFSC","file":"CERTIFICADOS/2019 (6)/2019 - Citação - Certificado IFSC 20h.pdf","drive":"https://drive.google.com/file/d/1DHydl31iFYAJWxRI7IkR5sM2k3AMdIdV/view"},
+            {"title":"Educação Interprofissional em Saúde EIP PT Certificado de Conclusão AVASUS - 30h","year":2019,"category":"curso","hours":"30h","institution":"AVASUS","file":"CERTIFICADOS/2019 (6)/2019 - Educação_Interprofissional_em_Saúde-EIP-PT_Certificado_de_Conclusão-AVASUS-30h.pdf","drive":"https://drive.google.com/file/d/1qdmlDO6I0BgxfFAlsOVDwjeW0AYf-lXP/view"},
+            {"title":"2019 - Oficina de reflexão de prática docente com uso de metodologias ativas - 48h","year":2019,"category":"evento","hours":"48h","institution":"","file":"CERTIFICADOS/2019 (6)/2019 - Oficina de reflexão de prática docente com uso de metodologias ativas - 48h.pdf","drive":"https://drive.google.com/file/d/1ytvECnFFS7RixnsSqXV6NxMzI1KPWAK4/view"},
+            {"title":"2019 - Proex certificado de participação como Revisor de Artigos no VIII Seminário de Extensão, Cultura e Assuntos Comunitário - 8h - UFT","year":2019,"category":"evento","hours":"8h","institution":"UFT","file":"CERTIFICADOS/2019 (6)/2019 - UFT Proex - certificado de participação como Revisor de Artigos no VIII Seminário de Extensão, Cultura e Assuntos Comunitário 8h.pdf","drive":"https://drive.google.com/file/d/1usdfkhNTUhWPi2dv81eEM6vUtBOv7Ew1/view"},
+            {"title":"2020 - Artigo Declaração BJD - \"Revelando a bibliografia de direito penal disponível nas bibliotecas universitárias de São Luís-MA: de 2015 a 2019","year":2020,"category":"evento","hours":"","institution":"","file":"CERTIFICADOS/2020 (13)/2020 - Artigo Declaração BJD 497-1.pdf","drive":"https://drive.google.com/file/d/1pMWxNg43ivN0Z3g8lbQdkWP15EYJwJMV/view"},
+            {"title":"BiblioOnline2020 - 20h","year":2020,"category":"curso","hours":"20h","institution":"BiblioOnline","file":"CERTIFICADOS/2020 (13)/2020 - BiblioOnline2020-20h.pdf","drive":"https://drive.google.com/file/d/1F8akORwdolrVkSgyfX7WRG0i6L5EdkD6/view"},
+            {"title":"Competências Profissionais, Emocionais e Tecnológicas para Tempos de Mudança - 4h","year":2020,"category":"curso","hours":"4h","institution":"PUCRS","file":"CERTIFICADOS/2020 (13)/2020 - Competências Profissionais, Emocionais e Tecnológicas para Tempos de Mudança - 4h.pdf","drive":"https://drive.google.com/file/d/1SRyTEkjLL617gycGAn44y2rcJh5kAZyq/view"},
+            {"title":"Curso Revista científica - 90h - UERGS","year":2020,"category":"curso","hours":"90h","institution":"UERGS","file":"CERTIFICADOS/2020 (13)/2020 - Curso Revista científica UERGS- 90h.pdf","drive":"https://drive.google.com/file/d/1GsAv-UXXLs8AiUlR_5egbQ8ObM8nzHr7/view"},
+            {"title":"Das infrações e penalidades do bibliotecário - 2h - CFB","year":2020,"category":"curso","hours":"2h","institution":"CFB","file":"CERTIFICADOS/2020 (13)/2020 - Das infrações e penalidades do bibliotecário - CFB 2h.pdf","drive":"https://drive.google.com/file/d/13lAaSK9pWexvQQQiDFjyosVN1tcSZoiO/view"},
+            {"title":"Edição e tratamento de imagens - 40h - TIMTEC","year":2020,"category":"curso","hours":"40h","institution":"TIMTEC","file":"CERTIFICADOS/2020 (13)/2020 - Edição e tratamento de imagens 40 h - TIMTEC.pdf","drive":"https://drive.google.com/file/d/1eF3YHqs27lHBHwFj6-XYpGvDVXsQebqy/view"},
+            {"title":"Espaço virtual de treinamento para equipes de TI do projeto Escolas de Saúde Pública Edição 2020 Certificado do curso 139948 - 40h","year":2020,"category":"curso","hours":"40h","institution":"OPAS","file":"CERTIFICADOS/2020 (13)/2020 - Espaço_virtual_de_treinamento_para_equipes_de_TI_do_projeto_Escolas_de_Saúde_Pública___Edição_2020-Certificado_do_curso_139948 40h.pdf","drive":"https://drive.google.com/file/d/1wasW8hXZWd_if58c6gpK5k8QgHaEyC0_/view"},
+            {"title":"Expert em Ensino Remoto Educatio - 5h - Moonshot Educatio","year":2020,"category":"curso","hours":"5h","institution":"Moonshot Educatio","file":"CERTIFICADOS/2020 (13)/2020 - Expert em Ensino Remoto-Moonshot Educatio-5h.pdf","drive":"https://drive.google.com/file/d/1dyVc10pekqMQ5bFXyb7PftE9Kf77a9O3/view"},
+            {"title":"Formação de Instrutor da Educação a Distância - 30h - Unicet","year":2020,"category":"curso","hours":"30h","institution":"Unicet","file":"CERTIFICADOS/2020 (13)/2020 - Formação de Instrutor da Educação a Distância - Unicet 30h.pdf","drive":"https://drive.google.com/file/d/17PAZwM3fqVsrwfso71ePvwWn6PAdvwjG/view"},
+            {"title":"2020 - Noções Básicas para Coordenar Cursos On-line","year":2020,"category":"curso","hours":"","institution":"Enap","file":"CERTIFICADOS/2020 (13)/2020 - Noções Básicas para Coordenar Cursos On-line - EVG.pdf","drive":"https://drive.google.com/file/d/17PF-KANEUIfMHArcwr92Ay8wAjHi9rMh/view"},
+            {"title":"2020 - Participação em BANCA TCC -","year":2020,"category":"orientacao","hours":"","institution":"","file":"CERTIFICADOS/2020 (13)/2020 - Participação em BANCA TCC.pdf","drive":"https://drive.google.com/file/d/1bIdnxp6GGviMLk4CZZQStUsEap8ldrpP/view"},
+            {"title":"2020 - Professor e Orientador TCC -","year":2020,"category":"orientacao","hours":"","institution":"","file":"CERTIFICADOS/2020 (13)/2020 - Professor e Orientador TCC.pdf","drive":"https://drive.google.com/file/d/1dM_anL3iwPJLUIUS1kG22tlAiGnipzaa/view"},
+            {"title":"Relações Humanas com Ênfase na Qualidade dos Serviços Públicos - 40h - Unicet","year":2020,"category":"curso","hours":"40h","institution":"Unicet","file":"CERTIFICADOS/2020 (13)/2020- Relações Humanas com Ênfase na Qualidade dos Serviços Públicos - Unicet 40 h.pdf","drive":"https://drive.google.com/file/d/1Te8l5XLal86wZl60XvRMpm5ZtO0p4bln/view"},
+            {"title":"2021 - A Tecnociência Solidária como cenário estratégico - 4h","year":2021,"category":"curso","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - A Tecnociência Solidária como cenário estratégico - UFT 4h.pdf","drive":"https://drive.google.com/file/d/1q2kKHLdxhPXmP3FPM6Y2n2u-WiI5Elaz/view"},
+            {"title":"2021 - Aula Magna - Especialização em Análise de Dados - 3h","year":2021,"category":"curso","hours":"3h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Aula Magna - Especialização em Análise de Dados - UFT 3h.pdf","drive":"https://drive.google.com/file/d/1UwQXl0_u_LmbOasTs1wqk4EnhFoxBRVi/view"},
+            {"title":"2021 - Biblioline 2021","year":2021,"category":"curso","hours":"","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - Biblioline 2021 - Certificado.pdf","drive":"https://drive.google.com/file/d/1c_StEXvCa3aRTLtDX_a-XyWcO98zjwdI/view"},
+            {"title":"2021 - Curso Geral de Propriedade Intelectual à Distância - 75h","year":2021,"category":"curso","hours":"75h","institution":"INPI","file":"CERTIFICADOS/2021 (31)/2021 - CURSO GERAL DE PROPRIEDADE INTELECTUAL À DISTÂNCIA - 75h DL101PBR21S4.pdf","drive":"https://drive.google.com/file/d/1DNduPVlcgqmtfKKGdCsnf0grlhcnFjUy/view"},
+            {"title":"2021 - Certificação em liderança - capacidade de aprender e resiliencia - 4h","year":2021,"category":"curso","hours":"4h","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - Certificação em liderança capacidade de aprender e resiliencia.pdf","drive":"https://drive.google.com/file/d/19cOVfdQX8WbuykR_X8ar9AfyiXo2sS88/view"},
+            {"title":"2021 - Ciência, inovação e humanismo - fronteiras - 4h","year":2021,"category":"curso","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Ciência inovação e humanismo - fronteiras - UFT 4h.pdf","drive":"https://drive.google.com/file/d/1k9IJ5BgFQrvpJ9_l_vtaDKqRMUjLgXiG/view"},
+            {"title":"2021 - Congresso do Ano Ibero-Americano das Bibliotecas - Diálogos bibliotecários para criar futuros","year":2021,"category":"evento","hours":"","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - Congresso do Ano Ibero-Americano das Bibliotecas, Diálogos bibliotecários para criar futuros.pdf","drive":"https://drive.google.com/file/d/1QWJkJpOdrZzX6gHUZlmnYciMeqFtSyW2/view"},
+            {"title":"2021 - Construção de Patentes Relevantes - 4h","year":2021,"category":"curso","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Construção de Patentes Relevantes - 4 h UFT.pdf","drive":"https://drive.google.com/file/d/1H96qfesfn6TQapgry0R4lmpB7SS3uwBC/view"},
+            {"title":"2021 - Depósito Legal na Fundação Biblioteca Nacional - ABPR - 2h","year":2021,"category":"curso","hours":"2h","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - Depósito Legal na Fundação Biblioteca Nacional - ABPR-2h.pdf","drive":"https://drive.google.com/file/d/10Wa9hqF7URnM61NShF6ElfRZx4ABdLsc/view"},
+            {"title":"2021 - Empreendedorismo 1 - Empreender com propósito - 40h","year":2021,"category":"curso","hours":"40h","institution":"TIMTEC","file":"CERTIFICADOS/2021 (31)/2021 - Empreendedorismo 1 Empreender com propósito - 40h TIMTEC.pdf","drive":"https://drive.google.com/file/d/1jemiFR-EjLwvGQ3b9tJHkHabCBFNt-SW/view"},
+            {"title":"2021 - Empreendedorismo 2 - Como planejar seu negócio - 40h","year":2021,"category":"curso","hours":"40h","institution":"TIMTEC","file":"CERTIFICADOS/2021 (31)/2021 - Empreendedorismo 2 - Como planejar seu negócio - 40h TIMTEC.pdf","drive":"https://drive.google.com/file/d/1by2rJV9HYa3-rxoXv8TfFTAbWTSWfVy8/view"},
+            {"title":"2021 - Essentials of Patents (DL 170) - WIPO","year":2021,"category":"curso","hours":"","institution":"WIPO","file":"CERTIFICADOS/2021 (31)/2021 - Essentials of Patents (DL-170) – WIPO.pdf","drive":"https://drive.google.com/file/d/1OGgsufzqYJlO5q1HNjP4uHEIbiaQZI-b/view"},
+            {"title":"2021 - Estudos do futuro e Inovação na Região Amazônica - 4h","year":2021,"category":"curso","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Estudos do futuro e Inovação na Região Amazônica - 4h UFT.pdf","drive":"https://drive.google.com/file/d/1p_Fx9_3ppa-2OujHIUMoXC0yjoFhhax-/view"},
+            {"title":"2021 - Fundamentos da Ciência de Dados - 3h","year":2021,"category":"curso","hours":"3h","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - Fundamentos da Ciência de Dados 3h.pdf","drive":"https://drive.google.com/file/d/1wtF87fyZvY2BOaUUjiywvpQ5RuNICRhU/view"},
+            {"title":"2021 - GT 7 - Aplicações diversas de PI e TT - artigo MARC - 4h","year":2021,"category":"evento","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - GT 7 - Aplicações diversas de PI e TT - artigo MARC - UFT 4h.pdf","drive":"https://drive.google.com/file/d/1sDT-4Och_tstfRMPvZjvjFYqVnajShdx/view"},
+            {"title":"2021 - Governança de TIC para o Governo Digital - 40h","year":2021,"category":"curso","hours":"40h","institution":"Enap","file":"CERTIFICADOS/2021 (31)/2021 - Governança de TIC para o Governo Digital - EVG.pdf","drive":"https://drive.google.com/file/d/1Lc7YuNGvIOFIj8DH2iWlI72Yj1QS6ovc/view"},
+            {"title":"2021 - Governo Aberto - 40h","year":2021,"category":"curso","hours":"40h","institution":"Enap","file":"CERTIFICADOS/2021 (31)/2021 - Governo Aberto - EVG.pdf","drive":"https://drive.google.com/file/d/1H5mDHlZ9QyTNnp-zmgDrQ2a_XE62byju/view"},
+            {"title":"2021 - II Oficina de Boas Práticas da Rede PROFNIT - 40h","year":2021,"category":"evento","hours":"40h","institution":"PROFNIT","file":"CERTIFICADOS/2021 (31)/2021 - II Oficina de Boas Práticas da Rede PROFNIT.pdf","drive":"https://drive.google.com/file/d/12bpp-924urERFzyzwEyUJ6Y49WyTHvhv/view"},
+            {"title":"2021 - Inovação e empreendedorismo na prática - 4h","year":2021,"category":"curso","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Inovação e empreendedorismo na prática - UFT 4h.pdf","drive":"https://drive.google.com/file/d/13ZqbFEG4JK3l3PzFns7LriA6immAFmHQ/view"},
+            {"title":"2021 - Inovação, empreendedorismo e startup - 4h","year":2021,"category":"curso","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Inovação, empreendedorismo e startup - UFT 4h.pdf","drive":"https://drive.google.com/file/d/1US6oDC05VXjptc7wkbuwXfs8tYfcAlRw/view"},
+            {"title":"2021 - Produção de vídeos educacionais para Web - 40h","year":2021,"category":"curso","hours":"40h","institution":"TIMTEC","file":"CERTIFICADOS/2021 (31)/2021 - Produção de vídeos educacionais para Web - 40h TIMTEC.pdf","drive":"https://drive.google.com/file/d/1n6no5k6B5-gcmLSYfXRuEXVosX_2kVkl/view"},
+            {"title":"2021 - Projetos em Inovação - tecnologias sociais e o Opaje - 4h","year":2021,"category":"curso","hours":"4h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Projetos em Inovação - tecnologias sociais e o Opaje - 4h UFT.pdf","drive":"https://drive.google.com/file/d/1Cu0BWZndaHn0PS22HQ_yhL1QD3cwRNEe/view"},
+            {"title":"2021 - Registro de patente - Inventando, depositando e empreendendo - 2h","year":2021,"category":"curso","hours":"2h","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - Registro de patente - Inventando, depositando e empreendendo - 2h.pdf","drive":"https://drive.google.com/file/d/1zqSJZpan1ssA4rStECiMnfkv8xjxSPCI/view"},
+            {"title":"2021 - Seminário Internacional Inovação, Pesquisas e práticas disruptivas em formação - 16h","year":2021,"category":"evento","hours":"16h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 - Seminário Internacional Inovação, Pesquisas e práticas disruptivas em formação - UFT 16h.pdf","drive":"https://drive.google.com/file/d/10gUCp42PJlVtlwp2lUgJbqc-N5tELJD3/view"},
+            {"title":"2021 - Servidor Público de Estado do Tocantins - direitos e deveres - Sisepe - 60h","year":2021,"category":"curso","hours":"60h","institution":"Sisepe","file":"CERTIFICADOS/2021 (31)/2021 - Servidor Público de Estado do Tocantins direitos e deveres – Sisepe – 60h.pdf","drive":"https://drive.google.com/file/d/16RE416wV7LMvlyTUyQLhgZLkCFOzFH__/view"},
+            {"title":"2021 - Tutoria em Educação a Distância - 20h","year":2021,"category":"curso","hours":"20h","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - TUTORIA_EM_EDUCAÇÃO_A_DISTÂNCIA 20h.pdf","drive":"https://drive.google.com/file/d/1iC_FHGWrnjJ7ZM8Mmm5_moreXfCeFs1p/view"},
+            {"title":"2021 - Web of Science - certificado pela participação - Clarivate Analytics - 2h","year":2021,"category":"curso","hours":"2h","institution":"SISBIB","file":"CERTIFICADOS/2021 (31)/2021 - Web of Science - certificado pela participação - Clarivate Analytics - 2h.pdf","drive":"https://drive.google.com/file/d/1i-E1xoX5YDlLwqd_3a_b_V2iQJc6mnD5/view"},
+            {"title":"2021 - Workshop PI - IFTO","year":2021,"category":"curso","hours":"","institution":"IFTO","file":"CERTIFICADOS/2021 (31)/2021 - Workshop PI - 023df5769552291340153a4ff5297cf070dc9f0d - IFTO.pdf","drive":"https://drive.google.com/file/d/1ZprWYr5h0i5BQSJ98uUaUF3sbgEFudbQ/view"},
+            {"title":"2021 - XI ProspeCTI - 43h","year":2021,"category":"curso","hours":"43h","institution":"","file":"CERTIFICADOS/2021 (31)/2021 - XI-ProspeCTI-2021 - 43h.pdf","drive":"https://drive.google.com/file/d/174D_91ATBCDj_Mka9_S-fTbOII0DgmGY/view"},
+            {"title":"2021 - Oficina ABNT (palestrante) - UFT - 10h","year":2021,"category":"evento","hours":"10h","institution":"UFT","file":"CERTIFICADOS/2021 (31)/2021 -Oficina ABNT UFT (palestrante).pdf","drive":"https://drive.google.com/file/d/1iABkyD0KuSc_RonszgwwywIzuxaWCf_n/view"},
+            {"title":"2021 - Neuropedagogia - 60h","year":2021,"category":"curso","hours":"60h","institution":"UEMA","file":"CERTIFICADOS/2021 (31)/2021 Neuropedagogia - 60h UEMA.pdf","drive":"https://drive.google.com/file/d/1uvT3dZ_MdGqzCkXspgVywI5ti3LDWxnb/view"},
+            {"title":"2022 - RESGATE DA ESCOLA TOCANTINENSE DO SUS NAS PÁGINAS DA REVISTA RET-SUS (13º Abrasco - Marcelo e George)","year":2022,"category":"evento","hours":"","institution":"ABRASCO","file":"CERTIFICADOS/2022(11)/2022 - Abrasco-Marcelo e George.pdf","drive":"https://drive.google.com/file/d/16wQ10RFaLLsNfFd6Aup479HMpa92dQHy/view"},
+            {"title":"2022 - Curso Estratégias de Inovação no Serviço Público Estadual - Certificado 7934 - 40h","year":2022,"category":"curso","hours":"40h","institution":"","file":"CERTIFICADOS/2022(11)/2022 - Curso Estratégias_de_Inovação_no_Serviço_Público_Estadual-Certificado_7934.pdf","drive":"https://drive.google.com/file/d/1jiLxLnMB9wAipZWPUvXpfh5rkX2iQSCC/view"},
+            {"title":"2022 - Design Thinking para Inovação no Setor Público - 40h","year":2022,"category":"curso","hours":"40h","institution":"Unicet","file":"CERTIFICADOS/2022(11)/2022 - Design Thinking para Inovação no Setor Público - Unicet.pdf","drive":"https://drive.google.com/file/d/1o2B_nmGT_XpCs4g-43cRrla6nMZGgwGi/view"},
+            {"title":"2022 - Expertise em Webconferência - 40h","year":2022,"category":"curso","hours":"40h","institution":"Unicet","file":"CERTIFICADOS/2022(11)/2022 - Expertise_em_Webconferência - Unicet.pdf","drive":"https://drive.google.com/file/d/1h9392yUHBb5yPJOHar3UERqgbLaNxtBc/view"},
+            {"title":"2022 - Inovação nos processos regulatórios do MEC - 2h","year":2022,"category":"curso","hours":"2h","institution":"MEC","file":"CERTIFICADOS/2022(11)/2022 - Minha biblioteca -  Inovação nos processos regulatórios do MEC.pdf","drive":"https://drive.google.com/file/d/1G4_Vehp9Y59xlXkO1g2xif8tf2vy_Tfx/view"},
+            {"title":"2022 - Inovação e Transformação Digital - 1:30h","year":2022,"category":"curso","hours":"1:30h","institution":"Minha Biblioteca","file":"CERTIFICADOS/2022(11)/2022 - Minha biblioteca - Inovação e Transformação Digital - certificados_webinar_Marcelo Neves Diniz_20-07_119.pdf","drive":"https://drive.google.com/file/d/17eKo2uLSCNXrHON2n6tzIEQTlbvqwuYd/view"},
+            {"title":"2022 - Painel Virtual sobre IPES e cursos técnicos - uma nova oportunidade de inovar - 1h","year":2022,"category":"curso","hours":"1h","institution":"Minha Biblioteca","file":"CERTIFICADOS/2022(11)/2022 - Minha bibliotecaa - IPES e cursos tecnicos - oportuidade de inovar.pdf","drive":"https://drive.google.com/file/d/1v9Ox5AdtS3iqL-SHbV-PW5iLtx8KDmbh/view"},
+            {"title":"2022 - Propriedade intelectual aplicada à ciência aberta - 10h","year":2022,"category":"curso","hours":"10h","institution":"","file":"CERTIFICADOS/2022(11)/2022 - Propriedade intelectual aplicada à ciência aberta-10h.pdf","drive":"https://drive.google.com/file/d/1cldaBgxGMyFEAL5gL6_R0oBAiWXv1ips/view"},
+            {"title":"2022 - Minha Biblioteca - Inovação e Educação 5.0 - 1h","year":2022,"category":"curso","hours":"1h","institution":"Minha Biblioteca","file":"CERTIFICADOS/2022(11)/2022 Minha Biblioteca - Inovação e Educação 5.0.pdf","drive":"https://drive.google.com/file/d/13x_vnpNA4w-fN5oPFED4OMqVzMlZp9yT/view"},
+            {"title":"2022 - ENAPID - 24h","year":2022,"category":"curso","hours":"24h","institution":"Enap","file":"CERTIFICADOS/2022(11)/2022-ENAPID - 24h.pdf","drive":"https://drive.google.com/file/d/1Utn0bQMIE7TEjVwYIzjYesqsvEVG1-au/view"},
+            {"title":"2022 - Integrando a Agenda 2030 e os Objetivos de Desenvolvimento Sustentável - ODS - 12h","year":2022,"category":"curso","hours":"12h","institution":"","file":"CERTIFICADOS/2022(11)/2022-ODS_Agenda 2030-Certificado_12h.pdf","drive":"https://drive.google.com/file/d/1_GvcNdNccCAk2--RtToxJhLHIWleOkk7/view"},
+            {"title":"2023 - Bibliotecas inteligentes: IA e acesso à produção científica","year":2023,"category":"curso","hours":"","institution":"","file":"CERTIFICADOS/2023(18)/2023 - Bibliotecas inteligentes - IA - certificado.pdf","drive":"https://drive.google.com/file/d/1S6ewBeg_nI9woAk4DsEhGJr0j94Stinz/view"},
+            {"title":"2023 - CAPAGIIC-SAÚDE 4.0: ALFABETIZAÇÃO MIDIÁTICA E INFORMACIONAL EM SAÚDE - 100h","year":2023,"category":"curso","hours":"100h","institution":"CAPAGIIC","file":"CERTIFICADOS/2023(18)/2023 - CAPAGIIC - certificado.pdf","drive":"https://drive.google.com/file/d/1RLS9WRkmsJDnNnH-dsaYLRZpcfGBd2f2/view"},
+            {"title":"2023 - ChatGPT - 10h","year":2023,"category":"curso","hours":"10h","institution":"Prime Cursos","file":"CERTIFICADOS/2023(18)/2023 - ChatGPT - 10h-Prime Cursos -21053-2022494.pdf","drive":"https://drive.google.com/file/d/1LmIQZsY6rmK1RJ5WGaEJYDJQHu0we4wt/view"},
+            {"title":"2023 - Cidadania e Direitos Humanos - Inclusão e Igualdade - 40h","year":2023,"category":"curso","hours":"40h","institution":"Unicet","file":"CERTIFICADOS/2023(18)/2023 - Cidadania_e_Direitos_Humanos_Inclusão_e_Igualdade-Certificado_10898-Unicet.pdf","drive":"https://drive.google.com/file/d/1bCoe9ThPEgshLwlMuphpEfGq_H1JbOUq/view"},
+            {"title":"2023 - Declaração - oficina Vigilancia SES - 4h","year":2023,"category":"evento","hours":"4h","institution":"SES","file":"CERTIFICADOS/2023(18)/2023 - Declaração_Marcelo Diniz oficina -Vigilencia SES.pdf","drive":"https://drive.google.com/file/d/12mfihSOEuNbCleMZgxy3DbH0cthbwbcd/view"},
+            {"title":"2023 - Docência com Inteligência Artificial - 3h","year":2023,"category":"curso","hours":"3h","institution":"","file":"CERTIFICADOS/2023(18)/2023 - Docência com Inteligência Artificial - 3h.pdf","drive":"https://drive.google.com/file/d/1qYkXoFHxfgfEP_LWnlDEFAMsvrDG9CJy/view"},
+            {"title":"2023 - Oficina de transcrição de páginas de rosto em latim - 8h","year":2023,"category":"evento","hours":"8h","institution":"Biblioteca Nacional","file":"CERTIFICADOS/2023(18)/2023 - Oficina de transcrição de páginas de rosto em latim - 2023.pdf","drive":"https://drive.google.com/file/d/1JYkMKpl4dZ9nWO-iADmvv_gAeRWNCOnw/view"},
+            {"title":"2023 - PI para Bibliotecários - INPI - 9h","year":2023,"category":"curso","hours":"9h","institution":"INPI","file":"CERTIFICADOS/2023(18)/2023 - PI para Bibliotecários 0 INPI - Certificado.pdf","drive":"https://drive.google.com/file/d/1jEICHwhQnBpp5Aa3O4WkYwepZawfc9Ia/view"},
+            {"title":"2023 - Transformação Digital, Criatividade e Novas Tecnologias no Serviço - 40h","year":2023,"category":"curso","hours":"40h","institution":"Unicet","file":"CERTIFICADOS/2023(18)/2023 - Transformação_Digital,_Criatividade_e_Novas_Tecnologias_no_ServiçoUnicet.pdf","drive":"https://drive.google.com/file/d/1qfg_Q0a2qqk0bJW1Qv5DEG3rsF--p33m/view"},
+            {"title":"2023 - Formação de Orientadores de TCC EaD - IFES - 60h","year":2023,"category":"orientacao","hours":"60h","institution":"IFES","file":"CERTIFICADOS/2023(18)/2023 - ifes_Formação de Orientadores de TCC-EaD.pdf","drive":"https://drive.google.com/file/d/1eaEJ-NMXVfUgDQm0aNqFsWemMvPLapGJ/view"},
+            {"title":"2023 - Certificado Exame Invest - 2h","year":2023,"category":"curso","hours":"2h","institution":"","file":"CERTIFICADOS/2023(18)/Certificado Exame Invest - Marcelo neves diniz.pdf","drive":"https://drive.google.com/file/d/19GG4rORIt5OXOzN4tSZgGqNZRqDbvyn2/view"},
+            {"title":"2023 - Certificado palestra - IFTO","year":2023,"category":"palestra","hours":"","institution":"IFTO","file":"CERTIFICADOS/2023(18)/IFTO certificado palestra - Marcelo Neves Diniz.pdf","drive":"https://drive.google.com/file/d/1ZHOzCwtdxtHHCULcRhtMKBokdSQQg2Fu/view"},
+            {"title":"2023 - Introdução à Inteligência Artificial - Turma 2023.2 - 30h","year":2023,"category":"curso","hours":"30h","institution":"","file":"CERTIFICADOS/2023(18)/Introdução_à_Inteligência_Artificial___Turma_2023.2-Certificado_de_conclusão_do_curso_22687 (1).pdf","drive":"https://drive.google.com/file/d/10gFHzmQU2rmSZVf6BAYSy3ZHJ0ZGbF_i/view"},
+            {"title":"2023 - LEI 12.244/2010 E A CONSTRUÇÃO DE UMA REDE ESTADUAL DE BIBLIOTECAS ESCOLARES EM GOIÁS: UM LEVANTAMENTO SITUACIONAL - 2h","year":2023,"category":"curso","hours":"2h","institution":"","file":"CERTIFICADOS/2023(18)/MARCELO NEVES DINIZ - Dia do bibliotecário.pdf","drive":"https://drive.google.com/file/d/1UiNnpaHhPtX0WPksVZHxK0-_eknvGwPq/view"},
+            {"title":"2023 - LEI 12.244/2010 – A EFETIVAÇÃO DA BIBLIOTECA ESCOLAR COMO DIREITO - 8h","year":2023,"category":"curso","hours":"8h","institution":"","file":"CERTIFICADOS/2023(18)/MARCELO NEVES DINIZ - Dia do bibliotecário 2.pdf","drive":"https://drive.google.com/file/d/1FHcsS68hBY5cZDQ_AvtkN8O8KVB6c5rl/view"},
+            {"title":"2023 - Certificado - UFMA - 4h","year":2023,"category":"curso","hours":"4h","institution":"UFMA","file":"CERTIFICADOS/2023(18)/UFMA Certificado_marcelo_neves_diniz.pdf","drive":"https://drive.google.com/file/d/11UxrHIgoaTF6DJIejQphKYYD2p2DGs2x/view"},
+            {"title":"2023 - Seminário - Declaração - UFMA","year":2023,"category":"evento","hours":"","institution":"UFMA","file":"CERTIFICADOS/2023(18)/UFMA Seminário - Declaracao_marcelo_neves_diniz.pdf","drive":"https://drive.google.com/file/d/1TryQPyUQO7azkYQivm5nHsorSFxbzihY/view"},
+            {"title":"2024 - A Inteligência Artificial e as perspectivas do bibliotecário (Palestra) - 3h","year":2024,"category":"evento","hours":"3h","institution":"CRB13","file":"CERTIFICADOS/2024 (6)/2024 - CERTIFICADO SEMANA DO BIBLIOTECÁRIO 2024 - MARCELO DINIZ.pdf","drive":"https://drive.google.com/file/d/1hv5pNX6G_wYWZCPQKPbq0RPUVWVJL78o/view"},
+            {"title":"Introdução à IA 2024 Certificado 20228 - EGOV","year":2024,"category":"curso","hours":"","institution":"EGOV","file":"CERTIFICADOS/2024 (6)/2024 - Introdução_à_IA___2024-Certificado_20228 - EGOV.pdf","drive":"https://drive.google.com/file/d/1DVhayDG8KTAleSA6CArhXfTJuBnc_eQI/view"},
+            {"title":"2024 - Potencializando sua pesquisa: ferramentas acadêmicas com IA - 3h","year":2024,"category":"curso","hours":"3h","institution":"","file":"CERTIFICADOS/2024 (6)/2024 - Potencializando sua pesquisa ferramentas acadêmicas com IA.pdf","drive":"https://drive.google.com/file/d/1SjAOLG8rCXrG56vW0eYWBbirITXZnnBm/view"},
+            {"title":"certificado 27 Ciclo de Debates do Nethis Brasília 20 06 24 - 3h - Fiocruz","year":2024,"category":"evento","hours":"3h","institution":"Fiocruz","file":"CERTIFICADOS/2024 (6)/certificado- 27 Ciclo de Debates do Nethis Fiocruz Brasília - 20-06-24-3h.pdf","drive":"https://drive.google.com/file/d/1dnPbKqXUHNBQ-s2o15L4cOiLd0hhDFoN/view"},
+            {"title":"2024 - Introdução à Inteligência Artificial e suas Aplicações - 24h","year":2024,"category":"curso","hours":"24h","institution":"EGOV","file":"CERTIFICADOS/2024 (6)/2024 - Introdução_à_IA___2024-Certificado_20228 - EGOV.pdf","drive":"https://drive.google.com/file/d/1DVhayDG8KTAleSA6CArhXfTJuBnc_eQI/view"},
+
+            {"title":"2024 - Formação Pedagógica em Docência EaD - 40h","year":2024,"category":"curso","hours":"40h","institution":"","file":"CERTIFICADOS/2024 (6)/Curso_de_Formação_Pedagógica_em_Docência_EaD-Emitir_certificado_0.pdf","drive":"https://drive.google.com/file/d/1A0ytMoit97cv-NPQrjMXxUUmWvqESKjh/view"},
+            {"title":"2024 - 27º Ciclo de Debates do Nethis Fiocruz Brasília - 3h","year":2024,"category":"evento","hours":"3h","institution":"Fiocruz","file":"CERTIFICADOS/2024 (6)/certificado- 27 Ciclo de Debates do Nethis Fiocruz Brasília - 20-06-24-3h.pdf","drive":"https://drive.google.com/file/d/1dnPbKqXUHNBQ-s2o15L4cOiLd0hhDFoN/view"},
+            {"title":"2024 - Inteligência Artificial no Contexto do Serviço Público - 20h","year":2024,"category":"curso","hours":"20h","institution":"Enap","file":"CERTIFICADOS/2024 (6)/inteligencia_artificial_no_contexto_do_servico_publico_turma_mar2024_certificado.pdf","drive":"https://drive.google.com/file/d/1VIP7EE3eucZhaxE77ngvl2cIW6zwYAzR/view"},
+            {"title":"2025 - XIV Congresso CONSAD de Gestão Pública","year":2025,"category":"evento","hours":"","institution":"Even3","file":"CERTIFICADOS/2025 (11)/2025 - Certificado do artigo Consad.pdf","drive":"https://drive.google.com/file/d/1BaEm8BotXPTpdJOgM0K8dcaW86H0sa-G/view"},
+            {"title":"2025 - Minicurso Aprendendo com IA - 8h (Palestrante)","year":2025,"category":"curso","hours":"8h","institution":"Even3","file":"CERTIFICADOS/2025 (11)/2025 - Certificado_minicurso-aprendendo-com-ia-613117_Participação_20-28-01.pdf","drive":"https://drive.google.com/file/d/1zyCeFfR2IPyMJhD-GRaKIoQzG0ZklYsM/view"},
+            {"title":"2025 - Cursor com Python: desenvolvimento inteligente com IA - 8h","year":2025,"category":"curso","hours":"8h","institution":"Santander","file":"CERTIFICADOS/2025 (11)/2025 - Cursor com Python.pdf","drive":"https://drive.google.com/file/d/1RXwLFPUIzsnoxwXHvvRFZ5uKHF7PaO2L/view"},
+            {"title":"2025 - Engenharia de Prompt - 3h","year":2025,"category":"curso","hours":"3h","institution":"UC","file":"CERTIFICADOS/2025 (11)/2025 - Engenharia de prompt - UC-bd815301-b43d-48c2-beb3-1f3055ad95e3.pdf","drive":"https://drive.google.com/file/d/12G_Ezc8_yAgntaYLRIzLFYbC0BfP_dX-/view"},
+            {"title":"2025 - Filosofia I - 40h","year":2025,"category":"curso","hours":"40h","institution":"IFRS","file":"CERTIFICADOS/2025 (11)/2025 - Filosofia_I-Certificado_digital_2469043.pdf","drive":"https://drive.google.com/file/d/1DZ-AGVBVHirZGhDAVfah9DqzTQxUzicY/view"},
+            {"title":"2025 - Inteligência Artificial nas Bibliotecas","year":2025,"category":"curso","hours":"","institution":"","file":"CERTIFICADOS/2025 (11)/2025 - Inteligência Artificial nas Bibliotecas - Marcelo Neves Diniz_Assinado.PDF","drive":"https://drive.google.com/file/d/1Q4l6r-YU5L0qAnMUbkUNkv97GP4FUWdP/view"},
+            {"title":"2025 - XV Jornada de Integração Acadêmica (JOIA) - 30h","year":2025,"category":"curso","hours":"30h","institution":"Vitru","file":"CERTIFICADOS/2025 (11)/2025 - JOIA - 42a14df058a6013ad411fa6dd1f41a96_.pdf","drive":"https://drive.google.com/file/d/1skTJl1R4WPNtX-lbgv4Ejj6xhHk-dqsL/view"},
+            {"title":"2025 - Minicurso Inteligência Artificial em Bibliotecas Escolares - 3h","year":2025,"category":"curso","hours":"3h","institution":"CRB","file":"CERTIFICADOS/2025 (11)/2025 - MINISTRANTE_MINICURSO DA SEMANA BIBLIOTECÁRIA 2025.pdf","drive":"https://drive.google.com/file/d/1hGPwQgxajGuaodbP4zZIu4p--SpnAMML/view"},
+            {"title":"2025 - Curso de Políticas Informadas por Evidências com Base no Sistema GRADE - 40h","year":2025,"category":"curso","hours":"40h","institution":"UFT","file":"CERTIFICADOS/2025 (11)/2025 - PIE - Certificado - Marcelo.pdf","drive":"https://drive.google.com/file/d/1cHEmNbBFOWXydlFTQS5Tle0ccfUSHtqR/view"},
+            {"title":"2025 - Treinamento Target IA para Usuários e Supervisores do GEDWeb","year":2025,"category":"curso","hours":"","institution":"Target","file":"CERTIFICADOS/2025 (11)/2025 - Target IA - Abnt.pdf","drive":"https://drive.google.com/file/d/1b5lFodb5G9dfqS6_vcp1adXyQJbygluT/view"},
+            {"title":"2025 - Curso Introdutório: Inteligência Artificial no Mundo Acadêmico - 40h","year":2025,"category":"curso","hours":"40h","institution":"UERGS","file":"CERTIFICADOS/2025 (11)/2025 Curso_Introdutório_Inteligência_Artificial_no_Mundo_Acadêmico_(2ª_turma)-CertificadoIA_2468.pdf","drive":"https://drive.google.com/file/d/15EVvJ_2tnmMW40pMySpBTbTTxI3rWIJv/view"},
+            {"title":"2025 - Declaração - Classificação Decimal Universal (CDU)","year":2025,"category":"evento","hours":"","institution":"Faculdade Única","file":"CERTIFICADOS/2025 (11)/DECLARAÇÃO - MARCELO NEVES DINIZ - CLASSIFICAÇÃO DECIMAL UNIVERSAL (CDU).pdf","drive":"https://drive.google.com/file/d/1trChbSvQoK91XruIKTVtX-YeafeRv3gB/view"},
+            {"title":"2025 - Declaração - Desenvolvimento e Automação de Acervos","year":2025,"category":"evento","hours":"","institution":"Faculdade Única","file":"CERTIFICADOS/2025 (11)/DECLARAÇÃO - MARCELO NEVES DINIZ - DESENVOLVIMENTO E AUTOMAÇÃO DE ACERVOS.pdf","drive":"https://drive.google.com/file/d/1qB5_B29Utl-RHhcE0Yj6uxdkce0DB2wl/view"},
+            {"title":"2026 - Automação e Inteligência Artificial para bibliotecas e bibliotecários - 3h","year":2026,"category":"curso","hours":"3h","institution":"","file":"CERTIFICADOS/2026/2026 - Biblionline - Marcelo Neves Diniz_Assinado.PDF","drive":"https://drive.google.com/file/d/1vmwsZ7oH9Voz3SuBsCHnvhHpK3vHx_I6/view"},
+            {"title":"2026 - Ia para Todos - 4h","year":2026,"category":"curso","hours":"4h","institution":"StartSe","file":"CERTIFICADOS/2026/2026 - Ia para Todos - 4h.pdf","drive":"https://drive.google.com/file/d/1P8ZCZxJ9dxQZMYeHHoBgG1HET8VfiGcQ/view"},
+            {"title":"2026 - Certificado Palestrante - Dia do Bibliotecário 2026","year":2026,"category":"palestra","hours":"","institution":"Even3","file":"CERTIFICADOS/2026/2026 - Certificado Palestrante Marcelo Neves Diniz.pdf","drive":"https://drive.google.com/file/d/1F-g0eMoDOq_9ivE2NOHALnJj4hlNGqL4/view"},
+            {"title":"2026 - Segurança digital para o seu dia a dia - 8h","year":2026,"category":"curso","hours":"8h","institution":"Santander","file":"CERTIFICADOS/2026/2026 - Segurança digital para o seu dia a dia 2256_marcelo.diniz@mail.uft.edu.br.pdf","drive":"https://drive.google.com/file/d/1yPNcN-EVQp4hG8Oo0SWp_yIu2i-vlP_a/view"},
+            {"title":"2026 - A construção dos livros didáticos do PNLD - 30h","year":2026,"category":"curso","hours":"30h","institution":"Enap","file":"CERTIFICADOS/2026/2026 - a_construcao_dos_livros_didaticos_do_pnld_turma_mai2026_certificado (1).pdf","drive":"https://drive.google.com/file/d/1y6fNiHafg8s1HsMBP_cDuaFH-VI520r4/view"},
+            {"title":"2026 - Curso de Atualização: Normas das ABNT: Referências e Citações - 8h","year":2026,"category":"palestra","hours":"8h","institution":"ABNT","file":"CERTIFICADOS/2026/2026 - certificado-palestrante ABNT CitaRef - CRB13.pdf","drive":"https://drive.google.com/file/d/1ZBf9_--fS8H2z7TX6BmInl9sYj01ufqh/view"},
+            {"title":"2026 - Criar, Inovar e Proteger: Propriedade Intelectual para Educadores - 120h","year":2026,"category":"curso","hours":"120h","institution":"MEC","file":"CERTIFICADOS/2026/2026 - Criar, Inovar e Proteger_ Propriedade Intelectual para Educadores AVAMEC.pdf","drive":"https://drive.google.com/file/d/1McJlcUUEqRSVm9n7XTr-JPTeNgiNMR6R/view"},
+            {"title":"2026 - Avaliador externo de banca de TCC — A cultura indígena como prática em saúde: relato de experiência a partir da educação popular em saúde — Cássia Thais da Silva Heredia — 27/03/2026","year":2026,"category":"orientacao","hours":"","institution":"Fiocruz","file":"CERTIFICADOS/2026/BANCA - Curso de Especialização em Educação Popular em Saúde - Declaracao.html","drive":"https://drive.google.com/file/d/16Ue5gu9wScj7eAP38bMi3da01ADCSZvL/view"},
+        ];
+
+        function getCertYear(cert) {
+            const fileYearMatch = cert.file.match(/(\d{4}) - /);
+            if (fileYearMatch) return Number(fileYearMatch[1]);
+            const titleYearMatch = cert.title.match(/^(\d{4})/);
+            if (titleYearMatch) return Number(titleYearMatch[1]);
+            const pathYearMatch = cert.file.match(/(\d{4})/);
+            return Number(pathYearMatch ? pathYearMatch[1] : cert.year);
+        }
+
+        function normalizeText(text) {
+            return String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+        }
+
+        function inferInstitutionFromText(text) {
+            const normalized = normalizeText(text);
+            const known = [
+                ['UFMA', 'UFMA'], ['UFT', 'UFT'], ['UEMA', 'UEMA'], ['IFTO', 'IFTO'], ['IFSC', 'IFSC'],
+                ['INPI', 'INPI'], ['WIPO', 'WIPO'], ['ABNT', 'ABNT'], ['CRB', 'CRB'], ['CFB', 'CFB'],
+                ['EVG', 'EVG'], ['EGOV', 'EGOV'], ['FIOCRUZ', 'Fiocruz'], ['PROFNIT', 'PROFNIT'],
+                ['UNICET', 'Unicet'], ['CLASSCURSOS', 'ClassCursos'], ['PRIME CURSOS', 'Prime Cursos'],
+                ['TIMTEC', 'TIMTEC'], ['MOONSHOT', 'Moonshot Educatio'], ['SENAC', 'SENAC'], ['PROQUEST', 'ProQuest'],
+                ['ENAP', 'Enap'], ['OPAS', 'OPAS'], ['SANTANDER', 'Santander'], ['UERGS', 'UERGS'], ['IFES', 'IFES'],
+                ['ABRASCO', 'ABRASCO'], ['TARGET', 'Target'], ['STARTSE', 'StartSe'], ['MEC', 'MEC'],
+                ['VITRU', 'Vitru'], ['IFRS', 'IFRS'], ['UFRN', 'UFRN'], ['CLARIVATE', 'Clarivate Analytics']
+            ];
+            for (const [key, val] of known) {
+                if (normalized.includes(key)) return val;
+            }
+            return '';
+        }
+
+        function getInstitution(cert) {
+            const inst = String(cert.institution || '').trim();
+            if (inst) return inst;
+            return inferInstitutionFromText(cert.title) || inferInstitutionFromText(cert.file) || 'Sem instituição';
+        }
+
+        function renderStats() {
+            const total = certificates.length;
+            const categories = {};
+            const years = new Set();
+            certificates.forEach(cert => {
+                categories[cert.category] = (categories[cert.category] || 0) + 1;
+                years.add(getCertYear(cert));
+            });
+            const sortedYears = Array.from(years).sort((a, b) => a - b);
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('generatedDate').textContent = new Date().toLocaleDateString('pt-BR');
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card"><div class="stat-number">${total}</div><div class="stat-label">Total</div></div>
+                <div class="stat-card"><div class="stat-number">${Object.keys(categories).length}</div><div class="stat-label">Categorias</div></div>
+                <div class="stat-card"><div class="stat-number">${sortedYears.length ? `${sortedYears[0]}-${sortedYears[sortedYears.length - 1]}` : '0-0'}</div><div class="stat-label">Período</div></div>
+                <div class="stat-card"><div class="stat-number">${categories.diploma||0}</div><div class="stat-label">Diplomas</div></div>
+                <div class="stat-card"><div class="stat-number">${categories.curso||0}</div><div class="stat-label">Cursos</div></div>
+                <div class="stat-card"><div class="stat-number">${categories.evento||0}</div><div class="stat-label">Eventos</div></div>
+                <div class="stat-card"><div class="stat-number">${categories.palestra||0}</div><div class="stat-label">Palestras</div></div>
+                <div class="stat-card"><div class="stat-number">${categories.orientacao||0}</div><div class="stat-label">Orientação</div></div>
+            `;
+        }
+
+        const institutionDomains = {
+            'UFMA': 'ufma.br',
+            'UFT': 'uft.edu.br',
+            'UEMA': 'uema.br',
+            'UERGS': 'uergs.edu.br',
+            'IFSC': 'ifsc.edu.br',
+            'IFTO': 'ifto.edu.br',
+            'INPI': 'inpi.gov.br',
+            'ABNT': 'abnt.org.br',
+            'CFB': 'cfb.org.br',
+            'CRB': 'cfb.org.br',
+            'EVG': 'escolavirtual.gov.br',
+            'EGOV': 'egov.df.gov.br',
+            'Fiocruz': 'fiocruz.br',
+            'WIPO': 'wipo.int',
+            'PROFNIT': 'profnit.org.br',
+            'Unicet': 'unicet.edu.br',
+            'TIMTEC': 'timtec.com.br',
+            'Prime Cursos': 'primecursos.com.br',
+            'Moonshot Educatio': 'moonshotedu.com.br',
+            'classcursos': 'classcursos.com.br',
+            'UC': 'uc.pt',
+            'SENAC': 'senac.br',
+            'ProQuest': 'proquest.com',
+            'DataContRol': '',
+            'Artesanato Educacional': '',
+            'Universidade do Livro': 'universidadedolivro.org.br',
+            'OPS': 'ops.org.br',
+            'Enap': 'enap.gov.br',
+            'ClassCursos': 'classcursos.com.br',
+            'UFRN': 'ufrn.br',
+            'BRJD': '',
+            'OPAS': 'opas.org.br',
+            'Moonshot Education': 'moonshotedu.com.br',
+            'Sisepe': 'sisepe.to.gov.br',
+            'Clarivate Analytics': 'clarivate.com',
+            'Vitru': 'vitru.edu.br',
+            'IFRS': 'ifrs.edu.br',
+            'Santander': 'santander.com.br',
+            'MEC': 'gov.br/mec',
+            'StartSe': 'startse.com',
+            'IFES': 'ifes.edu.br',
+            'ABRASCO': 'abrasco.org.br',
+            'Target': '',
+            'Faculdade Única': ''
+        };
+
+        const institutionLogos = {
+            'ProQuest': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3jyW8bIGygdJZaDrOSdrOaUdx4SwEJAhPtSpt5Jd_Ng&s',
+            'DataContRol': 'https://ncdn0.infojobs.com.br/logos/2013/12/19/287939.jpg?f=45790.4492046643',
+            'Unicet': 'https://central.to.gov.br/image/245445?w=325&h=200',
+            'Universidade do Livro': 'https://www2.unesp.br/Modulos/Noticias/19203/unil_2015.jpg',
+            'Artesanato Educacional': 'https://i0.wp.com/artesanatoeducacional.com.br/wp-content/uploads/2018/03/cropped-Artesanato-1.png?fit=349%2C110&ssl=1',
+            'GDI Online': 'https://arquivista.blog.br/wp-content/uploads/2019/07/06-a-09-de-novembro-Evento-100-online.png',
+            'AVASUS': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR6_HeKPvevPQJwt-G8uD_Vm6xt00UWkOi1VK-3aAIpg&s=10',
+            'TIMTEC': 'https://badevalor.com.br/wp-content/uploads/2016/09/TIM.jpg',
+            'Enap': 'https://cetefe.org/wp-content/uploads/2020/11/enap.png',
+            'PUCRS': 'https://repositorio.pucrs.br/dspace/retrieve/92018',
+            'SISBIB': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRQohsKdlhMaDyOeGKr8PCki76Kuj5MC8uhHT-nRS1Gg&s',
+            'LinkedIn': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgIrMJx3T9-4R73gACpNcde8aYXwEhZMsS8u1M7-LdE6ZwWyD42dvis7k&s=10',
+            'OPAS': 'https://www.gov.br/saude/pt-br/composicao/sectics/plantas-medicinais-e-fitoterapicos/eventos-1/2022/exposicao-15-anos-da-pnpmf-1/logo-opas-3.jpeg',
+            'BiblioOnline': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFaYM5AZX1hbiPk75HFymfrWNCjo7tro1s1XoVyiQPKc22otWQwHDNqmg&s=10'
+        };
+
+        const certificateLogos = {
+            'CERTIFICADOS/2020 (13)/2020 - Espaço_virtual_de_treinamento_para_equipes_de_TI_do_projeto_Escolas_de_Saúde_Pública___Edição_2020-Certificado_do_curso_139948 40h.pdf': ['https://www.gov.br/saude/pt-br/composicao/sectics/plantas-medicinais-e-fitoterapicos/eventos-1/2022/exposicao-15-anos-da-pnpmf-1/logo-opas-3.jpeg'],
+            'CERTIFICADOS/2020 (13)/2020 - Competências Profissionais, Emocionais e Tecnológicas para Tempos de Mudança - 4h.pdf': ['https://network.grupoabril.com.br/wp-content/uploads/sites/4/2016/12/logo-pucrs.png'],
+            'CERTIFICADOS/2020 (13)/2020 - BiblioOnline2020-20h.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFaYM5AZX1hbiPk75HFymfrWNCjo7tro1s1XoVyiQPKc22otWQwHDNqmg&s=10'],
+            'CERTIFICADOS/2020 (13)/2020 - Noções Básicas para Coordenar Cursos On-line - EVG.pdf': ['https://cetefe.org/wp-content/uploads/2020/11/enap.png'],
+            'CERTIFICADOS/2021 (31)/2021 - CURSO GERAL DE PROPRIEDADE INTELECTUAL À DISTÂNCIA - 75h DL101PBR21S4.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQs85ruI3S9Qri1cYlOj8jhw2CxydRC3SSJQIQHNVg964abXSfilUOn9FR4&s=10',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPa9KGxChFC9MZq8LnrBY6P0w-HCKIO1r8j4_FlXte6w&s=10'
+            ],
+            'CERTIFICADOS/2023(18)/2023 - ChatGPT - 10h-Prime Cursos -21053-2022494.pdf': ['https://www.primecursos.com.br/blog/wp-content/uploads/2016/01/primeCURSOS1.jpg'],
+            'CERTIFICADOS/2023(18)/2023 - PI para Bibliotecários 0 INPI - Certificado.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW1wfWEiFJDld2rCDfXBDieMjovgIkS-uX5l-SFUSqzw&s=10'],
+            'CERTIFICADOS/2024 (6)/Curso_de_Formação_Pedagógica_em_Docência_EaD-Emitir_certificado_0.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTL3-GysdfZm-G6HchVj_SGqweLwRnEQ3eq98ZEZfEYXeXj3igUIf55IXQ&s=10'],
+            'CERTIFICADOS/2025 (11)/2025 Curso_Introdutório_Inteligência_Artificial_no_Mundo_Acadêmico_(2ª_turma)-CertificadoIA_2468.pdf': ['https://upload.wikimedia.org/wikipedia/commons/1/16/Logo_Uergsn.png'],
+            'CERTIFICADOS/2025 (11)/2025 - Engenharia de prompt - UC-bd815301-b43d-48c2-beb3-1f3055ad95e3.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYZi5l_tEjIgaecOQD_KMgqxvOAJDH5LnJb4C5H7tr4g&s=10'],
+            'CERTIFICADOS/2025 (11)/2025 - Target IA - Abnt.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI5sILt5eGUlSWmKjAxONskOPRaRbIvDW6nh4keKKZjQ&s=10'],
+            'CERTIFICADOS/2025 (11)/2025 - Certificado_minicurso-aprendendo-com-ia-613117_Participação_20-28-01.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4onYPizjbey5fzEetiKXO6eEhGiYOFBeK2OeLquKpGiOfUqa1dG_7ICo&s=10'],
+            'CERTIFICADOS/2025 (11)/2025 - Cursor com Python.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4onYPizjbey5fzEetiKXO6eEhGiYOFBeK2OeLquKpGiOfUqa1dG_7ICo&s=10'],
+            'CERTIFICADOS/2025 (11)/2025 - Inteligência Artificial nas Bibliotecas - Marcelo Neves Diniz_Assinado.PDF': ['https://www.igdi.com.br/wp-content/uploads/2025/01/Logo-Branca-com-azul-1024x218.png'],
+            'CERTIFICADOS/2026/2026 - Criar, Inovar e Proteger_ Propriedade Intelectual para Educadores AVAMEC.pdf': ['https://guiadovestibulinho.com.br/wp-content/uploads/2023/08/avamec.png?x92116'],
+            'CERTIFICADOS/2026/2026 - Ia para Todos - 4h.pdf': ['https://polodigitaldemanaus.com/wordpress/wp-content/uploads/2025/02/Screenshot-2025-02-24-122103.png'],
+            'CERTIFICADOS/2024 (6)/2024 - CERTIFICADO SEMANA DO BIBLIOTECÁRIO 2024 - MARCELO DINIZ.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg5j8uGJcfVV4ea27CXqrHBevUZLFRU5IsYIw5nBbuiQ&s','https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQK1t7Z8uiDAQ9_4Kv98xFsg7PPpy0BKe7JsIDjSUUjWmhQYr1DGt5qMDRX&s=10'],
+            'CERTIFICADOS/1997 a 2017 (10)/2017- Acceso y Uso de la Información Científica en Salud - 45h.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-cNb7qzsKOoa-PCB2sW7CQkD3nTjOUHS72fhsJGf1iA&s=10'],
+            'CERTIFICADOS/2018 (6)/2018 - Participação em Banca de TCC - Estratégia de intervenção para o fortalecimento dos processos de comunicação entre a gestão.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF7jdvkyuI_7Xygp4_e0LbReHwq9efEzjF4LcBmWKbA7oo0J4r7DcZj-g&s=10',
+                'https://upload.wikimedia.org/wikipedia/commons/1/17/Bras%C3%A3o_UFT.png',
+                'https://yt3.googleusercontent.com/otpW_mXMgPOvhOXcOTMAtR_6DP67v4P7ziFDI8G49tgieRxiwGLmRIHc2IT8RprV-eRWHlqA=s900-c-k-c0x00ffffff-no-rj',
+                'https://pbs.twimg.com/profile_images/1479129101285965825/sAH8Ox-z.jpg'
+            ],
+            'CERTIFICADOS/2018 (6)/2018 - Participação em Banca de TCC Orientador - Ações de responsabilidade socioambiental para o Lacen-TO.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF7jdvkyuI_7Xygp4_e0LbReHwq9efEzjF4LcBmWKbA7oo0J4r7DcZj-g&s=10',
+                'https://upload.wikimedia.org/wikipedia/commons/1/17/Bras%C3%A3o_UFT.png',
+                'https://yt3.googleusercontent.com/otpW_mXMgPOvhOXcOTMAtR_6DP67v4P7ziFDI8G49tgieRxiwGLmRIHc2IT8RprV-eRWHlqA=s900-c-k-c0x00ffffff-no-rj',
+                'https://pbs.twimg.com/profile_images/1479129101285965825/sAH8Ox-z.jpg'
+            ],
+            'CERTIFICADOS/2025 (11)/2025 - Certificado do artigo Consad.pdf': ['https://congressoconsad.org.br/wp-content/uploads/2026/05/Logomarca-Consad-Oficial-scaled.png'],
+            'CERTIFICADOS/2023(18)/2023 - ifes_Formação de Orientadores de TCC-EaD.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgqbzO_5TfNSSkcyO4G-tPaPrxz73OCQd6vtZuwQ1g9g&s=10'],
+            'CERTIFICADOS/2026/2026 - Certificado Palestrante Marcelo Neves Diniz.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1Z4vUYeFotcn_dELBcEeXAIn51CGYMPPEaV9xh1A9F1TTffnhLbYhOJg&s=10',
+                'https://upload.wikimedia.org/wikipedia/commons/1/17/Bras%C3%A3o_UFT.png'
+            ],
+            'CERTIFICADOS/2026/2026 - certificado-palestrante ABNT CitaRef - CRB13.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1Z4vUYeFotcn_dELBcEeXAIn51CGYMPPEaV9xh1A9F1TTffnhLbYhOJg&s=10'],
+            'CERTIFICADOS/2025 (11)/DECLARAÇÃO - MARCELO NEVES DINIZ - CLASSIFICAÇÃO DECIMAL UNIVERSAL (CDU).pdf': ['https://funip.faculdadeunica.com.br/logo-roxa-uniunica.svg'],
+            'CERTIFICADOS/2025 (11)/DECLARAÇÃO - MARCELO NEVES DINIZ - DESENVOLVIMENTO E AUTOMAÇÃO DE ACERVOS.pdf': ['https://funip.faculdadeunica.com.br/logo-roxa-uniunica.svg'],
+            'CERTIFICADOS/2021 (31)/2021 - Congresso do Ano Ibero-Americano das Bibliotecas, Diálogos bibliotecários para criar futuros.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMPOKlnJ0TXEwE92buLYdDeF_DbNrCneI1U3YeX--BZw&s'],
+            'CERTIFICADOS/1997 a 2017 (10)/1997 - Leitura Dinâmica - 80h.pdf': ['https://images.seeklogo.com/logo-png/12/2/senac-logo-png_seeklogo-124782.png'],
+            'CERTIFICADOS/1997 a 2017 (10)/2003 - Excelência no ATENDIMENTO 30h.pdf': [
+                'https://static.wixstatic.com/media/b008e8_e78fcae699fa488a8cbfe42da5893b14~mv2.png/v1/fill/w_718,h_140,al_c,lg_1,q_85/b008e8_e78fcae699fa488a8cbfe42da5893b14~mv2.png',
+                'https://images.seeklogo.com/logo-png/12/2/senac-logo-png_seeklogo-124782.png'
+            ],
+            'CERTIFICADOS/2020 (13)/2020 - Curso Revista científica UERGS- 90h.pdf': ['https://upload.wikimedia.org/wikipedia/commons/1/16/Logo_Uergsn.png'],
+            'CERTIFICADOS/2024 (6)/2024 - Introdução_à_IA___2024-Certificado_20228 - EGOV.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQC9uMFikfIMq_rSHS9Wgentwy-5y7XgBelXUKhIK1bew&s'],
+            'CERTIFICADOS/2024 (6)/2024 - Potencializando sua pesquisa ferramentas acadêmicas com IA.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFK8xhP48KLKQac_vldODVftezv-qeYKY9mJJbQjv7lA&s'],
+            'CERTIFICADOS/2024 (6)/inteligencia_artificial_no_contexto_do_servico_publico_turma_mar2024_certificado.pdf': ['https://www.gov.br/servidor/pt-br/acesso-a-informacao/gestao-de-pessoas/desempenho-e-desenvolvimento-de-pessoas/pasta-capa/enap.jpg'],
+            'CERTIFICADOS/2023(18)/2023 - CAPAGIIC - certificado.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBKVpSmZl58056x5BLJxvXeFGhYzrFzyWMVYAQMqYI_Q&s=10',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMnoPh-cHa_8iCcKdicn_UkTVefHdxtet1_OZdG5ybB7xvjOl5HXipLFY&s=10'
+            ],
+            'CERTIFICADOS/2023(18)/2023 - Oficina de transcrição de páginas de rosto em latim - 2023.pdf': ['https://www.bhgengenharia.com/wp-content/uploads/2025/03/Biblioteca-Nacional-Logo-1-1.png'],
+            'CERTIFICADOS/2019 (6)/2019 - Citação - Certificado IFSC 20h.pdf': [
+                'https://www2.ifsc.usp.br/portal-ifsc/wp-content/uploads/2019/09/logo-sbifsc300.jpg',
+                'https://sites.icmc.usp.br/francisco/Figures/ifsc.jpg'
+            ],
+            'CERTIFICADOS/2018 (6)/2018 - Repositórios institucionais - classcursos - 120h.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAOS5fdhpUM1_3S822Sv45-fKbfqb0reYFd89Nd5Od&s=10'],
+            'CERTIFICADOS/2021 (31)/2021 Neuropedagogia - 60h UEMA.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdaOsetVW28KzYvxtmn1pkPTPBaH2RpMfXeNmAO4VcbA&s=10',
+                'https://dados.uema.br/wp-content/uploads/2023/12/Brasao_UEMA_horizontal.jpg'
+            ],
+            'CERTIFICADOS/2021 (31)/2021 - Servidor Público de Estado do Tocantins direitos e deveres – Sisepe – 60h.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKh7hJwB2EZKIHp-Iig6MmG_aq8QZb2P1eEWyfUvay82tFglQhaC4qlbE&s=10'],
+            'CERTIFICADOS/2022(11)/2022 Minha Biblioteca - Inovação e Educação 5.0.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUnLpkTIvq2YdS_nvPLs4GEr4NhAgJ7uZ5lgJd5AJoJQ&s=10'],
+            'CERTIFICADOS/2022(11)/2022-ODS_Agenda 2030-Certificado_12h.pdf': [
+                'https://institutoaua.org.br/wp-content/uploads/2017/11/17-ODS.png',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQi1QlwsBFQ3kf1XoTa4AU6QlyIspKdzpauMqnKVAq71A&s=10'
+            ],
+            'CERTIFICADOS/2022(11)/2022 - Propriedade intelectual aplicada à ciência aberta-10h.pdf': ['https://www.google.com/s2/favicons?domain=fiocruz.br&sz=64'],
+            'CERTIFICADOS/2022(11)/2022 - Curso Estratégias_de_Inovação_no_Serviço_Público_Estadual-Certificado_7934.pdf': ['https://central.to.gov.br/image/245445?w=325&h=200'],
+            'CERTIFICADOS/2022(11)/2022 - Minha biblioteca - Inovação e Transformação Digital - certificados_webinar_Marcelo Neves Diniz_20-07_119.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS83RBQKF4MuifU-v5EXhSO_gYHuJLDsAXWRg1wIPJ59BaJMxRxfc1O-00&s=10'],
+            'CERTIFICADOS/2022(11)/2022 - Minha bibliotecaa - IPES e cursos tecnicos - oportuidade de inovar.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS83RBQKF4MuifU-v5EXhSO_gYHuJLDsAXWRg1wIPJ59BaJMxRxfc1O-00&s=10'],
+            'CERTIFICADOS/2021 (31)/2021 - Certificação em liderança capacidade de aprender e resiliencia.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6y-JCwQ6HQGDjq_dCtuujPipUy4ej-E1cfGN1Pmwxik78JXex'],
+            'CERTIFICADOS/2021 (31)/2021 - TUTORIA_EM_EDUCAÇÃO_A_DISTÂNCIA 20h.pdf': ['https://i0.wp.com/artesanatoeducacional.com.br/wp-content/uploads/2018/03/cropped-Artesanato-1.png?fit=349%2C110&ssl=1'],
+            'CERTIFICADOS/2021 (31)/2021 - XI-ProspeCTI-2021 - 43h.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTheTTkoCSfiIW0nObBEFkXqjZwR-dOPcZ7EcyAQyq8PfdD1GAo4T6KsVF_&s=10'],
+            'CERTIFICADOS/2021 (31)/2021 - Registro de patente - Inventando, depositando e empreendendo - 2h.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl6_cUY6RZK22V297PlvnkL_HZfb4xpY5JJU9OXU2-_g&s=10'],
+            'CERTIFICADOS/2021 (31)/2021 - Fundamentos da Ciência de Dados 3h.pdf': ['https://assets.bitdegree.org/online-learning-platforms/storage/media/linkedin-learning-review-logo-big.o.png?tr=w-250'],
+            'CERTIFICADOS/2021 (31)/2021 - Depósito Legal na Fundação Biblioteca Nacional - ABPR-2h.pdf': ['https://static.wixstatic.com/media/21ba0f_6af0ba5eb44a418293251d301cb9fa0d~mv2.png/v1/fit/w_2500,h_1330,al_c/21ba0f_6af0ba5eb44a418293251d301cb9fa0d~mv2.png'],
+            'CERTIFICADOS/2021 (31)/2021 - Biblioline 2021 - Certificado.pdf': [
+                'https://instagram.frec10-1.fna.fbcdn.net/v/t51.2885-19/158181379_433564051059489_691154063480374929_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby43MjAuYzIifQ&_nc_ht=instagram.frec10-1.fna.fbcdn.net&_nc_cat=109&_nc_oc=Q6cZ2gGbefsvW3GFf5_2QGHauw6rj0Hm9EiapIrP275REH39h-pa8Eb9rqDeXoe5iOYvTuI&_nc_ohc=aUrD78j00D4Q7kNvwHyoMpu&_nc_gid=cfBHUqEuuvO0KwjD44CEGw&edm=AP4sbd4BAAAA&ccb=7-5&oh=00_AQAPK47s--kWJZao-Bi1z0gCTENa2x7miODyp7-M-ThBVA&oe=6A603E0E&_nc_sid=7a9f4b',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ2ulgFjONIeIjHXMmi2LGT916Z1XqtqRTv2GVgO-Scw&s=10',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFaYM5AZX1hbiPk75HFymfrWNCjo7tro1s1XoVyiQPKc22otWQwHDNqmg&s=10'
+            ],
+            'CERTIFICADOS/2023(18)/UFMA Certificado_marcelo_neves_diniz.pdf': ['https://upload.wikimedia.org/wikipedia/commons/4/4d/UFMA_Universidade_Federal_do_Maranhao.jpg'],
+            'CERTIFICADOS/2025 (11)/2025 - JOIA - 42a14df058a6013ad411fa6dd1f41a96_.pdf': ['https://portal.uniasselvi.com.br/storage/app/noticia/170/capa/1280x962-20170808151600-UNIASSELVI%20-%20Logo%20Preto%20-%20Fundo%20Amarelo.jpg'],
+            'CERTIFICADOS/2023(18)/2023 - Bibliotecas inteligentes - IA - certificado.pdf': ['https://www.google.com/s2/favicons?domain=fiocruz.br&sz=64'],
+            'CERTIFICADOS/2023(18)/Certificado Exame Invest - Marcelo neves diniz.pdf': ['https://classic.exame.com/wp-content/uploads/2024/08/LOGO-FACULDADEEXAME.png'],
+            'CERTIFICADOS/2023(18)/MARCELO NEVES DINIZ - Dia do bibliotecário.pdf': ['https://ulbra-to.br/imagem/2022/11/24/Logo-Ulbra-Palmas-Dark-Aplicacao-horizontal/resize/530/530/90'],
+            'CERTIFICADOS/2023(18)/MARCELO NEVES DINIZ - Dia do bibliotecário 2.pdf': ['https://ulbra-to.br/imagem/2022/11/24/Logo-Ulbra-Palmas-Dark-Aplicacao-horizontal/resize/530/530/90'],
+            'CERTIFICADOS/2023(18)/2023 - Docência com Inteligência Artificial - 3h.pdf': ['https://www.felipeasensi.com/wp-content/uploads/2020/02/Logo-Felipe-Asensi.png'],
+            'CERTIFICADOS/2023(18)/Introdução_à_Inteligência_Artificial___Turma_2023.2-Certificado_de_conclusão_do_curso_22687 (1).pdf': ['https://upload.wikimedia.org/wikipedia/commons/3/3b/Instituto_Federal_de_Mato_Grosso_do_Sul_-_Marca_Vertical_2015.svg'],
+            'CERTIFICADOS/2022(11)/2022 - Minha biblioteca -  Inovação nos processos regulatórios do MEC.pdf': ['https://minhabiblioteca.com.br/wp-content/uploads/2022/08/logo_logo_azul-1.png'],
+            'CERTIFICADOS/2018 (6)/2018 - Oficina sobre o Plano de Gestão da Informação e Conhecimento-16h.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9lfhpKWzTRzOaaimxPuU5LhTH41AXfhTpBWmmUyVU9w&s=10'],
+            'CERTIFICADOS/2019 (6)/2019 - Certificado Apresentação de Trabalhos GDI Online.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_Z4VPMiLld-RZV0DLii1XWVJpDfXzEYM6D4F5nSQlCqPHbxsd&s=10',
+                'https://arquivista.blog.br/wp-content/uploads/2019/07/06-a-09-de-novembro-Evento-100-online.png'
+            ],
+            'CERTIFICADOS/2019 (6)/2019 - Oficina de reflexão de prática docente com uso de metodologias ativas - 48h.pdf': ['https://yt3.googleusercontent.com/otpW_mXMgPOvhOXcOTMAtR_6DP67v4P7ziFDI8G49tgieRxiwGLmRIHc2IT8RprV-eRWHlqA=s900-c-k-c0x00ffffff-no-rj'],
+            'CERTIFICADOS/2020 (13)/2020 - Artigo Declaração BJD 497-1.pdf': ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcReB-tHgOLWCSCDaIMoyyv6725DIUPibkEqofp6o0zQBQ&s=10'],
+            'CERTIFICADOS/1 DIPLOMAS/Especialização - Docência Educação Superior.pdf': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN3Ok9AEnqe24CuY2a19o4ncParZ_nG-f0FoRZd7hhlA&s=10',
+                'https://qb-assets.querobolsa.com.br/logos/colorido/large/3247/logo_1540995624.png'
+            ],
+            'CERTIFICADOS/1 DIPLOMAS/UFMA - Diploma e histórico de graduação - Biblioteconomia.pdf': ['https://upload.wikimedia.org/wikipedia/commons/4/4d/UFMA_Universidade_Federal_do_Maranhao.jpg'],
+            'CERTIFICADOS/2022(11)/2022 - Abrasco-Marcelo e George.pdf': ['https://abrasco.org.br/wp-content/uploads/2021/12/Abrasco-logo-500px.png'],
+            'CERTIFICADOS/2026/2026 - Biblionline - Marcelo Neves Diniz_Assinado.PDF': [
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlacSaOS1XuqHDNPmK9gD9r0KXqlpWXDnG7MnZqeFszA&s',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8Cuxd_eZQbxMQTq9jG6POmgms9hTq06KEDOv2lzpoIMbcei07KJn3UPw&s=10'
+            ],
+            'CERTIFICADOS/2021 (31)/2021 - II Oficina de Boas Práticas da Rede PROFNIT.pdf': [
+                'https://www.google.com/s2/favicons?domain=profnit.org.br&sz=64',
+                'https://www.google.com/s2/favicons?domain=fortec.org.br&sz=64'
+            ],
+            'CERTIFICADOS/2020 (13)/2020 - Participação em BANCA TCC.pdf': ['https://yt3.googleusercontent.com/otpW_mXMgPOvhOXcOTMAtR_6DP67v4P7ziFDI8G49tgieRxiwGLmRIHc2IT8RprV-eRWHlqA=s900-c-k-c0x00ffffff-no-rj'],
+            'CERTIFICADOS/2020 (13)/2020 - Professor e Orientador TCC.pdf': ['https://yt3.googleusercontent.com/otpW_mXMgPOvhOXcOTMAtR_6DP67v4P7ziFDI8G49tgieRxiwGLmRIHc2IT8RprV-eRWHlqA=s900-c-k-c0x00ffffff-no-rj'],
+            'CERTIFICADOS/2023(18)/UFMA Seminário - Declaracao_marcelo_neves_diniz.pdf': ['https://upload.wikimedia.org/wikipedia/commons/4/4d/UFMA_Universidade_Federal_do_Maranhao.jpg']
+        };
+
+        function getLogoUrl(institution, certFile) {
+            if (certificateLogos[certFile]) {
+                return certificateLogos[certFile][0];
+            }
+            if (institutionLogos[institution]) {
+                return institutionLogos[institution];
+            }
+            const domain = institutionDomains[institution];
+            if (domain) {
+                return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            }
+            return null;
+        }
+
+        function getExtraLogos(certFile) {
+            if (certificateLogos[certFile]) {
+                return certificateLogos[certFile].slice(1);
+            }
+            return [];
+        }
+
+        async function renderContent(filter='all', searchTerm='', yearFilter='all', institutionFilter='all') {
+            const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+            let filtered = certificates;
+            if (filter !== 'all') filtered = filtered.filter(c => c.category === filter);
+            if (searchTerm) filtered = filtered.filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase()) || getInstitution(c).toLowerCase().includes(searchTerm.toLowerCase()));
+            if (yearFilter !== 'all') filtered = filtered.filter(c => String(getCertYear(c)) === yearFilter);
+            if (institutionFilter !== 'all') filtered = filtered.filter(c => c.institution === institutionFilter);
+
+            const grouped = {};
+            filtered.forEach(cert => {
+                const category = cert.category || 'outro';
+                const year = getCertYear(cert);
+                const institution = getInstitution(cert);
+
+                if (!grouped[category]) grouped[category] = {};
+                if (!grouped[category][year]) grouped[category][year] = {};
+                if (!grouped[category][year][institution]) grouped[category][year][institution] = [];
+
+                grouped[category][year][institution].push(cert);
+            });
+
+            let html = '';
+            Object.keys(grouped).sort().reverse().forEach(category => {
+                const catTotal = Object.values(grouped[category]).flatMap(yearGroup => Object.values(yearGroup)).flat().length;
+                html += `<div class="category-section"><div class="category-header" onclick="toggleCategory(this)"><span class="category-title">${categoryLabels[category]}</span><span class="category-count">${catTotal} documento(s)</span></div><div class="category-content">`;
+                Object.keys(grouped[category]).sort((a,b)=> sortOrder === 'asc' ? a-b : b-a).forEach(year => {
+                    html += `<div class="year-section"><div class="year-header">📅 ${year}</div>`;
+
+                    Object.keys(grouped[category][year]).sort((a,b)=>a.localeCompare(b, 'pt-BR')).forEach(institution => {
+                        html += `<div class="institution-section"><div class="institution-header">🏢 ${institution}</div><div class="certificates-grid">`;
+
+                        grouped[category][year][institution]
+                            .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR') || a.file.localeCompare(b.file, 'pt-BR'))
+                            .forEach(cert => {
+                                const logoUrl = getLogoUrl(cert.institution, cert.file);
+                                const extraLogos = getExtraLogos(cert.file);
+                                const allLogos = logoUrl ? [logoUrl, ...extraLogos] : extraLogos;
+
+                                let logosHtml = '';
+                                if (allLogos.length === 1) {
+                                    logosHtml = `<img src="${allLogos[0]}" class="institution-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+                                } else if (allLogos.length > 1) {
+                                    logosHtml = '<div class="logos-row">';
+                                    allLogos.forEach((url, idx) => {
+                                        logosHtml += `<img src="${url}" class="institution-logo logo-small" onerror="this.style.display='none';">`;
+                                    });
+                                    logosHtml += '</div>';
+                                }
+
+                                const placeholder = allLogos.length > 0 ? '' : `<div class="logo-placeholder">🏢</div>`;
+                                html += `<a href="${cert.drive || cert.file}" target="_blank" rel="noopener" class="certificate-card" title="Abrir certificado no Google Drive">
+                                    <div class="logo-container">
+                                        ${logosHtml}
+                                        ${placeholder}
+                                    </div>
+                                    <div class="certificate-info">
+                                        <div class="certificate-title">${cert.title}</div>
+                                        <div class="click-hint">☁️ Abrir no Google Drive</div>
+                                    </div>
+                                </a>`;
+                            });
+
+                        html += `</div></div>`;
+                    });
+
+                    html += `</div>`;
+                });
+                html += `</div></div>`;
+            });
+            document.getElementById('content').innerHTML = html || '<p style="text-align:center;padding:40px;color:#6c757d;">Nenhum certificado encontrado.</p>';
+        }
+
+        function toggleCategory(header) {
+            const content = header.nextElementSibling;
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                header.style.background = 'linear-gradient(135deg, #1e3a5f 0%, #0f766e 100%)';
+            } else {
+                content.style.display = 'none';
+                header.style.background = '#495057';
+            }
+        }
+
+        function populateYearFilter() {
+            const years = new Set();
+            certificates.forEach(cert => years.add(getCertYear(cert)));
+            const sortedYears = Array.from(years).sort((a, b) => b - a);
+            const select = document.getElementById('yearFilter');
+            sortedYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                select.appendChild(option);
+            });
+        }
+
+        function populateInstitutionFilters() {
+            const institutions = new Set();
+            certificates.forEach(cert => {
+                const inst = getInstitution(cert);
+                if (inst && inst !== 'Sem instituição') institutions.add(inst);
+            });
+            const sorted = Array.from(institutions).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+            const container = document.getElementById('institutionFilters');
+            sorted.forEach(inst => {
+                const pill = document.createElement('button');
+                pill.className = 'institution-pill';
+                pill.textContent = inst;
+                pill.dataset.institution = inst;
+                pill.addEventListener('click', () => {
+                    const isActive = pill.classList.contains('active');
+                    document.querySelectorAll('.institution-pill').forEach(p => p.classList.remove('active'));
+                    if (!isActive) {
+                        pill.classList.add('active');
+                    }
+                    const filter = document.querySelector('.filter-btn.active').dataset.filter;
+                    const searchTerm = document.getElementById('searchBox').value;
+                    const yearFilter = document.getElementById('yearFilter')?.value || 'all';
+                    const institutionFilter = isActive ? 'all' : inst;
+                    renderContent(filter, searchTerm, yearFilter, institutionFilter);
+                });
+                container.appendChild(pill);
+            });
+        }
+
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            const filter = document.querySelector('.filter-btn.active').dataset.filter;
+            const yearFilter = document.getElementById('yearFilter')?.value || 'all';
+            const activeInstitution = document.querySelector('.institution-pill.active')?.dataset.institution || 'all';
+            renderContent(filter, e.target.value, yearFilter, activeInstitution);
+        });
+
+        document.getElementById('sortOrder').addEventListener('change', () => {
+            const filter = document.querySelector('.filter-btn.active').dataset.filter;
+            const searchTerm = document.getElementById('searchBox').value;
+            const yearFilter = document.getElementById('yearFilter')?.value || 'all';
+            const activeInstitution = document.querySelector('.institution-pill.active')?.dataset.institution || 'all';
+            renderContent(filter, searchTerm, yearFilter, activeInstitution);
+        });
+
+        document.getElementById('yearFilter').addEventListener('change', () => {
+            const filter = document.querySelector('.filter-btn.active').dataset.filter;
+            const searchTerm = document.getElementById('searchBox').value;
+            const yearFilter = document.getElementById('yearFilter')?.value || 'all';
+            const activeInstitution = document.querySelector('.institution-pill.active')?.dataset.institution || 'all';
+            renderContent(filter, searchTerm, yearFilter, activeInstitution);
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.dataset.filter;
+                const searchTerm = document.getElementById('searchBox').value;
+                const yearFilter = document.getElementById('yearFilter')?.value || 'all';
+                const activeInstitution = document.querySelector('.institution-pill.active')?.dataset.institution || 'all';
+                renderContent(filter, searchTerm, yearFilter, activeInstitution);
+            });
+        });
+
+        populateYearFilter();
+        populateInstitutionFilters();
+        renderStats();
+        renderContent();
+        (function(){
+            const img = new Image();
+            img.onload = () => { document.getElementById('cvPhoto').innerHTML = '<img src="foto.jpg" alt="Foto de Marcelo Neves Diniz">'; };
+            img.src = 'foto.jpg';
+            const n = c => certificates.filter(x => x.category === c).length;
+            document.getElementById('cvNumbers').textContent = certificates.length + ' certificados e documentos · ' + n('curso') + ' cursos · ' + n('evento') + ' eventos · ' + n('palestra') + ' palestras · ' + n('orientacao') + ' orientações e bancas';
+        })();
+    </script>
+</body>
+</html>
